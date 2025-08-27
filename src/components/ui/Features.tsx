@@ -1,9 +1,11 @@
 // src/components/landing/Features.tsx
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { BotMessageSquare, BookOpenCheck, Users, BarChart3, Star, Zap } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 const featureList = [
   {
@@ -38,7 +40,10 @@ const featureList = [
   },
 ];
 
+gsap.registerPlugin(ScrollTrigger);
+
 const Features = () => {
+    const sectionRef = useRef<HTMLDivElement | null>(null);
     const containerVariants: Variants = {
         hidden: {},
         visible: {
@@ -60,14 +65,26 @@ const Features = () => {
         }
     };
 
+  useEffect(() => {
+    if (!sectionRef.current) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.feature-title',
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' } }
+      );
+    }, sectionRef);
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section className="py-20">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+    <section className="py-24 bg-[#0B0B0F]">
+      <div className="container mx-auto px-4" ref={sectionRef}>
+        <h2 className="feature-title text-3xl md:text-4xl font-bold text-center mb-4 text-white">
           Everything You Need, All in One Place
         </h2>
-        <p className="text-secondary text-center max-w-2xl mx-auto mb-12">
-          LearnOS is built with powerful, interconnected features designed to create the most efficient learning environment.
+        <p className="text-zinc-300 text-center max-w-2xl mx-auto mb-12">
+          Personalized AI tutors, module creation, quizzes, flashcards (SRS), collaborative rooms, and analytics to guide your journey.
         </p>
 
         <motion.div 
@@ -81,13 +98,13 @@ const Features = () => {
             <motion.div
               key={index}
               variants={cardVariants}
-              className="bg-zinc-900 p-6 rounded-lg border border-border transition-all duration-300 hover:border-accent hover:-translate-y-1"
+              className="bg-[#111317] p-6 rounded-xl border border-white/5 transition-all duration-300 hover:-translate-y-1 hover:border-white/10"
             >
-              <div className="text-accent mb-4 w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
+              <div className="text-white mb-4 w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
                 {React.cloneElement(feature.icon, { size: 24 })}
               </div>
-              <h3 className="text-xl font-semibold text-primary mb-2">{feature.title}</h3>
-              <p className="text-secondary">{feature.description}</p>
+              <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
+              <p className="text-zinc-300">{feature.description}</p>
             </motion.div>
           ))}
         </motion.div>
