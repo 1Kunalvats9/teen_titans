@@ -1,6 +1,9 @@
+"use client"
+
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { signIn } from "next-auth/react"
+import { useState } from "react"
 import {
   Card,
   CardContent,
@@ -13,8 +16,40 @@ import { Label } from "@/components/ui/label"
 
 export function LoginForm({
   className,
+  onSwitchToSignup,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div"> & { onSwitchToSignup?: () => void }) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError("")
+    
+    const form = e.currentTarget
+    const formData = new FormData(form)
+    const email = String(formData.get('email') || '')
+    const password = String(formData.get('password') || '')
+    
+    if (!email || !password) return
+    
+    setLoading(true)
+    try {
+      const res = await signIn('credentials', { 
+        redirect: false, 
+        email, 
+        password 
+      })
+      
+      if (res?.error) {
+        setError('Invalid email or password')
+      }
+      // Success will refresh session via next-auth
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className={cn("flex flex-col gap-6 dark", className)} {...props}>
       <Card>
@@ -25,12 +60,18 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={onSubmit}>
             <div className="flex flex-col gap-6">
+              {error && (
+                <div className="text-sm text-red-500 bg-red-50 dark:bg-red-950/20 p-3 rounded-md">
+                  {error}
+                </div>
+              )}
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="m@example.com"
                   required
@@ -46,11 +87,11 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" name="password" type="password" required />
               </div>
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full">
-                  Login
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Logging in...' : 'Login'}
                 </Button>
                 <Button variant="outline" className="w-full" type="button" onClick={() => signIn('google')}>
                   Login with Google
@@ -59,9 +100,9 @@ export function LoginForm({
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <a href="#" className="underline underline-offset-4">
+              <button type="button" className="underline underline-offset-4" onClick={onSwitchToSignup}>
                 Sign up
-              </a>
+              </button>
             </div>
           </form>
         </CardContent>
