@@ -31,8 +31,6 @@ export default function LandingPage() {
   return (
     // Add the "dark" class to the main element to enable the dark theme
     <main className="dark bg-background text-foreground min-h-screen">
-      <Navbar />
-
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center pt-20">
         <motion.div
@@ -70,7 +68,6 @@ export default function LandingPage() {
       </section>
 
       <Features />
-      <Footer />
     </main>
   );
 }
