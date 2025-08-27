@@ -7,6 +7,7 @@ import { ArrowRight } from 'lucide-react';
 import Features  from "@/components/ui/Features"
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -54,8 +55,41 @@ export default function LandingPage() {
     return () => ctx.revert();
   }, []);
 
+  // Lenis smooth scroll for home page only
+  useEffect(() => {
+    const lenis = new Lenis({
+      autoRaf: false,
+      wheelMultiplier: 1.3,
+      touchMultiplier: 1.5,
+      smoothWheel: true,
+    });
+
+    // If using ScrollTrigger, update it on scroll
+    const onScroll = () => {
+      if (ScrollTrigger) {
+        ScrollTrigger.update();
+      }
+    };
+    // @ts-ignore - lenis has on method
+    lenis.on('scroll', onScroll);
+
+    let rafId: number;
+    const raf = (time: number) => {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    };
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      // @ts-ignore
+      lenis.off?.('scroll', onScroll);
+      lenis.destroy();
+    };
+  }, []);
+
   return (
-    <main className="dark bg-[#0B0B0F] text-foreground min-h-screen">
+    <main className="bg-background text-foreground min-h-screen">
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center pt-24" ref={heroRef}>
         <motion.div
@@ -68,13 +102,13 @@ export default function LandingPage() {
             variants={itemVariants}
             className="hero-heading text-4xl md:text-6xl lg:text-7xl font-bold leading-tight"
           >
-            Build Your Personal <span className="text-white">Learning OS</span>
+            Build Your Personal <span className="text-primary">Learning OS</span>
             <br />
             <span className="bg-clip-text text-transparent bg-gradient-to-b from-zinc-100 via-zinc-400 to-zinc-700">AI Tutors • Modules • Quizzes • Community</span>
           </motion.h1>
           <motion.p
             variants={itemVariants}
-            className="hero-subtext mt-6 text-lg md:text-xl text-zinc-300 max-w-3xl mx-auto"
+            className="hero-subtext mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
           >
             Learn anything, faster. Generate personalized modules, practice with spaced repetition flashcards,
             solve doubts with your AI mentor, and grow with peers.
@@ -82,7 +116,7 @@ export default function LandingPage() {
           <motion.div variants={itemVariants} className="mt-10 hero-cta">
             <motion.button
               whileHover={{ scale: 1.05, y: -2 }}
-              className="bg-white text-black font-semibold px-6 py-3 rounded-lg flex items-center gap-2 mx-auto shadow-[0_0_0_1px_rgba(255,255,255,0.12)] hover:shadow-[0_0_0_2px_rgba(255,255,255,0.18)]"
+              className="bg-primary text-primary-foreground font-semibold px-6 py-3 rounded-lg flex items-center gap-2 mx-auto shadow-sm"
             >
               Get Started for Free
               <ArrowRight size={20} />

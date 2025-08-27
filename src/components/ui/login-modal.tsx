@@ -2,14 +2,19 @@
 
 import React from 'react';
 import { LoginForm } from '@/components/ui/login-form';
+import { SignupForm } from '@/components/ui/signup-form';
 import { createPortal } from 'react-dom';
 
-type LoginModalProps = {
+type AuthModalProps = {
   open: boolean;
+  mode?: 'login' | 'signup';
   onClose: () => void;
 };
 
-export function LoginModal({ open, onClose }: LoginModalProps) {
+export function AuthModal({ open, onClose, mode = 'login' }: AuthModalProps) {
+  const [current, setCurrent] = React.useState<'login' | 'signup'>(mode);
+  React.useEffect(() => setCurrent(mode), [mode]);
+
   if (!open) return null;
 
   return createPortal(
@@ -20,7 +25,11 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
       />
       <div className="relative z-[101] w-full max-w-md px-4">
         <div className="rounded-xl shadow-lg">
-          <LoginForm />
+          {current === 'login' ? (
+            <LoginForm className="" onSwitchToSignup={() => setCurrent('signup')} />
+          ) : (
+            <SignupForm onSwitchToLogin={() => setCurrent('login')} />
+          )}
         </div>
       </div>
     </div>,

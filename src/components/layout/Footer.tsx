@@ -16,7 +16,7 @@ export const Footer = () => {
     };
 
     return (
-        <footer className="border-t border-border dark bg-background text-white py-12">
+        <footer className="border-t border-border bg-background text-foreground py-12">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
                     {/* Logo & Socials */}
@@ -25,10 +25,10 @@ export const Footer = () => {
                             <BrainCircuit className="text-creame" size={28} />
                             <h1 className="text-xl font-bold text-primary">LearnOS</h1>
                         </div>
-                        <p className="text-white mb-6">The ultimate AI-powered platform for modern learning.</p>
+                        <p className="text-muted-foreground mb-6">The ultimate AI-powered platform for modern learning.</p>
                         <div className="flex gap-4">
                             {socialLinks.map((link, i) => (
-                                <a key={i} href={link.href} className="text-white hover:text-primary transition-colors">
+                                <a key={i} href={link.href} className="text-muted-foreground hover:text-primary transition-colors">
                                     {link.icon}
                                 </a>
                             ))}
@@ -41,14 +41,14 @@ export const Footer = () => {
                             <ul className="space-y-3">
                                 {links.map(link => (
                                     <li key={link}>
-                                        <a href="#" className="text-white hover:text-primary transition-colors">{link}</a>
+                                        <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{link}</a>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                     ))}
                 </div>
-                <div className="mt-12 pt-8 border-t border-border text-center text-secondary text-sm">
+                <div className="mt-12 pt-8 border-t border-border text-center text-muted-foreground text-sm">
                     &copy; {new Date().getFullYear()} LearnOS. All rights reserved.
                 </div>
             </div>
