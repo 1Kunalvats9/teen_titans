@@ -78,7 +78,6 @@ const handler = NextAuth({
   },
   pages: {
     signIn: '/login',
-    // Optional: Add a custom page for the first time a user clicks the magic link
     verifyRequest: '/verify-request', 
   },
 })

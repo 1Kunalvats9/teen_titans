@@ -14,8 +14,20 @@ export default function RootLayout({
   return (
     //@ts-ignore
     <html lang="en" webcrx="" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const theme = localStorage.getItem('app-theme') || 'light';
+                document.documentElement.classList.toggle('dark', theme === 'dark');
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <ThemeProvider>
           <QueryProvider>
             <AuthProvider>
               <Navbar />

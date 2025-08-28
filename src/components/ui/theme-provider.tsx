@@ -13,6 +13,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
       defaultTheme="light"
       enableSystem={false}
       disableTransitionOnChange
+      storageKey="app-theme"
       {...props}
     >
       <ThemeSync>{children}</ThemeSync>
@@ -21,13 +22,19 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 }
 
 function ThemeSync({ children }: { children: React.ReactNode }) {
-  const { theme: nextTheme, setTheme } = useTheme()
+  const { theme: nextTheme, setTheme, resolvedTheme } = useTheme()
   const theme = useThemeStore((s) => s.theme)
+
+  // Sync Zustand with next-themes on mount
+  React.useEffect(() => {
+    if (resolvedTheme && !theme) {
+      useThemeStore.getState().setTheme(resolvedTheme as 'light' | 'dark')
+    }
+  }, [resolvedTheme, theme])
 
   // When Zustand theme changes, update next-themes
   React.useEffect(() => {
-    if (!nextTheme) return
-    if (theme !== nextTheme) {
+    if (theme && theme !== nextTheme) {
       setTheme(theme)
     }
   }, [theme, nextTheme, setTheme])
