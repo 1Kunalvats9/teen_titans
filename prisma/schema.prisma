@@ -54,6 +54,9 @@ model User {
   // AI Persona Preference
   persona String? // e.g., "Einstein", "Steve Jobs"
 
+  verificationToken        String?
+  verificationTokenExpiry  DateTime?
+
   // Relations from your original schema
   createdModules      Module[]
   moduleProgress      UserModule[]

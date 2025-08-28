@@ -5,9 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export function SignupForm({ className, onSwitchToLogin, ...props }: React.ComponentProps<"div"> & { onSwitchToLogin?: () => void }) {
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -31,8 +33,8 @@ export function SignupForm({ className, onSwitchToLogin, ...props }: React.Compo
         alert(data.error || 'Signup failed')
         return
       }
-      // On success, switch to login
-      onSwitchToLogin?.()
+      // On success, redirect to verify-request page
+      router.push('/verify-request')
     } finally {
       setLoading(false)
     }
