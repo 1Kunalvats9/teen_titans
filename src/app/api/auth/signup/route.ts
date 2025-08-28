@@ -1,6 +1,9 @@
+// app/api/signup/route.ts (your file)
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto'; // Import the crypto module
+import { transporter, mailOptions } from '@/lib/nodemailer'; // Import the transporter
 
 export async function POST(request: Request) {
   try {
@@ -15,12 +18,42 @@ export async function POST(request: Request) {
     }
 
     const hashed = await bcrypt.hash(password, 10);
+
+    // 1. Generate a secure verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 3600 * 1000); // Expires in 1 hour
+
+    // 2. Create the user with the token
     const user = await prisma.user.create({
-      data: { name, email, password: hashed },
-      select: { id: true, name: true, email: true },
+      data: {
+        name,
+        email,
+        password: hashed,
+        verificationToken,
+        verificationTokenExpiry,
+      },
     });
 
-    return NextResponse.json({ user }, { status: 201 });
+    // 3. Send the verification email
+    const verificationUrl = `${process.env.NEXTAUTH_URL}/api/auth/verify-email?token=${verificationToken}`;
+    
+    await transporter.sendMail({
+      ...mailOptions,
+      to: email,
+      subject: 'Verify your email address',
+      html: `
+        <h1>Email Verification</h1>
+        <p>Thanks for signing up! Please click the link below to verify your email address:</p>
+        <a href="${verificationUrl}">Verify Email</a>
+        <p>This link will expire in 1 hour.</p>
+      `,
+    });
+
+    return NextResponse.json(
+      { message: 'User created. Please check your email to verify your account.' },
+      { status: 201 }
+    );
+
   } catch (error) {
     console.error('Signup error', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
