@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import EmailProvider from "next-auth/providers/email"
 
-const handler = NextAuth({
+export const authOptions: any = {
   adapter: PrismaAdapter(prisma),
   providers: [
     EmailProvider({
@@ -31,7 +31,7 @@ const handler = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials: any) {
         if (!credentials?.email || !credentials?.password) return null
         
         const user = await prisma.user.findUnique({ 
@@ -53,9 +53,9 @@ const handler = NextAuth({
       },
     }),
   ],
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt" as const },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id
         token.name = user.name
@@ -65,7 +65,7 @@ const handler = NextAuth({
       }
       return token
     },
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (token && session.user) {
         session.user.id = token.id
         session.user.name = token.name
@@ -80,6 +80,8 @@ const handler = NextAuth({
     signIn: '/login',
     verifyRequest: '/verify-request', 
   },
-})
+}
+
+const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }
