@@ -4,14 +4,12 @@
 import React from 'react';
 import { motion, Variants } from 'framer-motion';
 import { BrainCircuit, Menu, User, LogOut } from 'lucide-react';
-import { AuthModal } from '@/components/ui/login-modal';
 import { useSession, signOut } from 'next-auth/react';
 import ThemeToggleButton from '@/components/ui/theme-toggle-button';
+import Link from 'next/link';
 
 export const Navbar = () => {
   const navLinks = ['Features', 'Pricing', 'Community'];
-  const [loginOpen, setLoginOpen] = React.useState(false);
-  const [mode, setMode] = React.useState<'login' | 'signup'>('login');
   const { data: session } = useSession();
 
   return (
@@ -61,16 +59,19 @@ export const Navbar = () => {
             </div>
           ) : (
             <>
-              <motion.button whileHover={{ scale: 1.05 }} className="px-4 py-2 text-primary font-semibold" onClick={() => { setMode('login'); setLoginOpen(true); }}>
-                Log In
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: '0px 0px 8px rgb(37,99,235)' }}
-                className="bg-accent text-white font-semibold px-4 py-2 rounded-lg"
-                onClick={() => { setMode('signup'); setLoginOpen(true); }}
-              >
-                Sign Up
-              </motion.button>
+              <Link href="/login">
+                <motion.button whileHover={{ scale: 1.05 }} className="px-4 py-2 text-primary font-semibold">
+                  Log In
+                </motion.button>
+              </Link>
+              <Link href="/signup">
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: '0px 0px 8px rgb(37,99,235)' }}
+                  className="bg-accent text-white font-semibold px-4 py-2 rounded-lg"
+                >
+                  Sign Up
+                </motion.button>
+              </Link>
             </>
           )}
         </div>
@@ -81,7 +82,6 @@ export const Navbar = () => {
             <Menu className="text-primary cursor-pointer" />
         </div>
       </div>
-      <AuthModal open={loginOpen} onClose={() => setLoginOpen(false)} mode={mode} />
     </motion.nav>
   );
 };

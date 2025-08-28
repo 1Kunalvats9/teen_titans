@@ -8,6 +8,7 @@ import Features  from "@/components/ui/Features"
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
+import Link from 'next/link';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -114,13 +115,15 @@ export default function LandingPage() {
             solve doubts with your AI mentor, and grow with peers.
           </motion.p>
           <motion.div variants={itemVariants} className="mt-10 hero-cta">
-            <motion.button
-              whileHover={{ scale: 1.05, y: -2 }}
-              className="bg-primary text-primary-foreground font-semibold px-6 py-3 rounded-lg flex items-center gap-2 mx-auto shadow-sm"
-            >
-              Get Started for Free
-              <ArrowRight size={20} />
-            </motion.button>
+            <Link href="/signup">
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                className="bg-primary text-primary-foreground font-semibold px-6 py-3 rounded-lg flex items-center gap-2 mx-auto shadow-sm"
+              >
+                Get Started for Free
+                <ArrowRight size={20} />
+              </motion.button>
+            </Link>
           </motion.div>
         </motion.div>
       </section>
