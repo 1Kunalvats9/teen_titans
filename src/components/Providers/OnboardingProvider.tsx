@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/auth'
 import { OnboardingModal } from '@/components/ui/onboarding-modal'
+import { usePathname } from 'next/navigation'
 
 interface OnboardingContextType {
   showOnboarding: () => void
@@ -16,15 +17,28 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   const { user, isAuthenticated, isLoading } = useAuth()
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
   const [hasShownOnboarding, setHasShownOnboarding] = useState(false)
+  const pathname = usePathname()
 
   useEffect(() => {
-    // Show onboarding modal if user is authenticated but not onboarded
-    // and we haven't shown it yet for this session
-    if (isAuthenticated && !isLoading && user && !user.isOnboarded && !hasShownOnboarding) {
+    // Only show onboarding modal if:
+    // 1. User is authenticated and not loading
+    // 2. User is not onboarded
+    // 3. We haven't shown it yet for this session
+    // 4. User is not on auth pages (login/signup)
+    const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/signup')
+    
+    if (
+      isAuthenticated && 
+      !isLoading && 
+      user && 
+      !user.isOnboarded && 
+      !hasShownOnboarding && 
+      !isAuthPage
+    ) {
       setIsOnboardingOpen(true)
       setHasShownOnboarding(true)
     }
-  }, [user, isAuthenticated, isLoading, hasShownOnboarding])
+  }, [user, isAuthenticated, isLoading, hasShownOnboarding, pathname])
 
   const showOnboarding = () => {
     setIsOnboardingOpen(true)
