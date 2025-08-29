@@ -8,8 +8,8 @@ const { getToken } = require('next-auth/jwt') as {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  // Only guard dashboard routes
-  if (pathname.startsWith('/dashboard')) {
+  // Guard dashboard and modules routes
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/modules')) {
     try {
       const token = await getToken({ 
         req, 
@@ -33,7 +33,7 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ['/dashboard/:path*', '/modules/:path*'],
 }
 
 

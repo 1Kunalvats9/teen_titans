@@ -14,14 +14,23 @@ export async function GET() {
     // Get user's learning statistics
     const [
       userModules,
+      createdModules,
       quizAttempts,
       totalStudyTime,
       weeklyProgress
     ] = await Promise.all([
-      // Get module progress
+      // Get module progress (modules user has started)
       prisma.userModule.findMany({
         where: { userId: session.user.id },
         include: { module: true }
+      }).catch(() => []), // Return empty array if query fails
+      
+      // Get modules created by the user
+      prisma.module.findMany({
+        where: { 
+          creatorId: session.user.id,
+          isPublic: true // Only count public modules
+        }
       }).catch(() => []), // Return empty array if query fails
       
       // Get quiz attempts
@@ -45,7 +54,7 @@ export async function GET() {
     ])
 
     const completedModules = userModules.filter(um => um.completed).length
-    const totalModules = userModules.length
+    const totalModules = createdModules.length // Count modules created by user
     const averageScore = quizAttempts.length > 0 
       ? quizAttempts.reduce((sum, attempt) => sum + attempt.score, 0) / quizAttempts.length
       : 0

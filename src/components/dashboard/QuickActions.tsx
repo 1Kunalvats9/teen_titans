@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { 
   BookOpen, 
@@ -7,12 +8,14 @@ import {
   Target, 
   Users, 
   Zap, 
-  MessageSquare,
   Play,
-  Plus
+  Plus,
+  Sparkles
 } from 'lucide-react'
 import { PremiumCard } from '@/components/ui/premium-card'
 import { Button } from '@/components/ui/button'
+import { ModuleSearch } from './ModuleSearch'
+
 
 const quickActions = [
   {
@@ -72,6 +75,8 @@ const quickActions = [
 ]
 
 export function QuickActions() {
+  const router = useRouter()
+
   const handleAction = (action: string) => {
     // Handle different actions
     switch (action) {
@@ -96,8 +101,8 @@ export function QuickActions() {
         console.log('Navigate to flashcards')
         break
       case 'new':
-        // Navigate to new modules
-        console.log('Navigate to new modules')
+        // Navigate to modules page with create form
+        router.push('/modules?create=true')
         break
     }
   }
@@ -142,19 +147,30 @@ export function QuickActions() {
         })}
       </div>
       
-      {/* Additional Actions */}
-      <div className="mt-6 pt-6 border-t border-border/50">
+      {/* Search and Create Section */}
+      <div className="mt-6 pt-6 border-t border-border/50 space-y-4">
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-foreground">Search Modules</h4>
+          <ModuleSearch />
+        </div>
+        
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 gap-2 cursor-pointer">
-            <MessageSquare className="w-4 h-4" />
-            Ask AI
+          <Button 
+            variant="outline" 
+            className="flex-1 gap-2 cursor-pointer"
+            onClick={() => router.push('/modules?create=true')}
+          >
+            <Sparkles className="w-4 h-4" />
+            Create Module
           </Button>
-          <Button variant="outline" className="flex-1 gap-2 cursor-pointer">
+          <Button variant="outline" onClick={()=>{router.push('/modules')}} className="flex-1 gap-2 cursor-pointer">
             <Target className="w-4 h-4" />
             Practice
           </Button>
         </div>
       </div>
+
+
     </PremiumCard>
   )
 }

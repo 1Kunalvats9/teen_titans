@@ -7,6 +7,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -36,6 +37,7 @@ export default function RootLayout({
                 <OnboardingProvider>
                   <Navbar />
                   {children}
+                  <Toaster />
                   <Footer />
                 </OnboardingProvider>
               </AppAuthProvider>

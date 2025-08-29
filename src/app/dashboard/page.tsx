@@ -10,6 +10,7 @@ import { RecentActivity } from '@/components/dashboard/RecentActivity'
 import { LearningProgress } from '@/components/dashboard/LearningProgress'
 import { AITutorCard } from '@/components/dashboard/AITutorCard'
 import { useAllDashboardData } from '@/hooks/queries/use-dashboard'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 const DashboardContent = memo(function DashboardContent() {
   const { user, isLoading } = useAuth()
@@ -17,8 +18,8 @@ const DashboardContent = memo(function DashboardContent() {
   const router = useRouter()
 
   useEffect(() => {
-    if (isLoading) return
-    if (!user) {
+    // Only redirect if we're not loading and there's no user
+    if (!isLoading && !user) {
       router.replace('/login')
     }
   }, [user, isLoading, router])
@@ -27,10 +28,7 @@ const DashboardContent = memo(function DashboardContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <div className="text-muted-foreground">Loading dashboard...</div>
-        </div>
+        <LoadingSpinner size="lg" text="Loading dashboard..." />
       </div>
     )
   }

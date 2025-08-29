@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { 
   BookOpen, 
   Target, 
@@ -65,6 +66,7 @@ const stats = [
 
 export function StatsOverview() {
   const { data: dashboardStats, isLoading, error } = useDashboardStats()
+  const router = useRouter()
 
   const getStatValue = (key: string) => {
     if (!dashboardStats) return 0
@@ -127,10 +129,18 @@ export function StatsOverview() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
           >
-            <PremiumCard 
-              variant="default" 
-              className="h-32 flex flex-col justify-center"
+            <div
+              onClick={() => {
+                if (stat.title === 'Total Modules') {
+                  router.push('/modules')
+                }
+              }}
+              className="cursor-pointer"
             >
+              <PremiumCard 
+                variant="default" 
+                className="h-32 flex flex-col justify-center hover:shadow-lg transition-all duration-300"
+              >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground mb-1">
@@ -144,7 +154,8 @@ export function StatsOverview() {
                   <Icon className={`h-6 w-6 ${stat.color}`} />
                 </div>
               </div>
-            </PremiumCard>
+              </PremiumCard>
+            </div>
           </motion.div>
         )
       })}
