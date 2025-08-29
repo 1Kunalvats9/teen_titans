@@ -26,7 +26,7 @@ export default function VerifyRequestPage() {
               Check your email
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed">
-              We've sent you a verification link to your email address. 
+              We&apos;ve sent you a verification link to your email address. 
               Click the link to verify your account and get started.
             </p>
           </div>
@@ -37,7 +37,7 @@ export default function VerifyRequestPage() {
               <div className="w-5 h-5 bg-primary rounded-full flex-shrink-0 mt-0.5"></div>
               <div className="text-sm text-accent-foreground">
                 <p className="font-medium">Verification link expires in 1 hour</p>
-                <p className="text-muted-foreground mt-1">Check your spam folder if you don't see it</p>
+                <p className="text-muted-foreground mt-1">Check your spam folder if you don&apos;t see it</p>
               </div>
             </div>
           </div>
@@ -63,7 +63,7 @@ export default function VerifyRequestPage() {
           {/* Footer */}
           <div className="mt-8 text-center">
             <p className="text-muted-foreground text-sm">
-              Didn't receive the email?{' '}
+              Didn&apos;t receive the email?{' '}
               <button className="text-primary hover:text-primary/80 transition-colors duration-200 underline">
                 Resend verification
               </button>

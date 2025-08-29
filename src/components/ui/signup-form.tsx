@@ -2,6 +2,7 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { signIn } from "next-auth/react"
+import { useAuth } from "@/hooks/auth"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
@@ -11,6 +12,7 @@ import Link from "next/link"
 export function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { register: registerUser } = useAuth()
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -24,17 +26,11 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
 
     try {
       setLoading(true)
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        alert(data.error || 'Signup failed')
+      const res = await registerUser(name, email, password)
+      if (!res.success) {
+        alert(res.message || 'Signup failed')
         return
       }
-      // On success, redirect to landing page
       router.push('/')
     } finally {
       setLoading(false)

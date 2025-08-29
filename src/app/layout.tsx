@@ -1,6 +1,8 @@
 // src/app/layout.tsx
 import AuthProvider from "@/components/Providers/AuthProvider";
+import { AppAuthProvider } from "@/hooks/auth";
 import QueryProvider from "@/components/Providers/QueryProvider";
+import { OnboardingProvider } from "@/components/Providers/OnboardingProvider";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -12,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    //@ts-ignore
+    //@ts-expect-error Next.js custom attribute 'webcrx' is injected by extension
     <html lang="en" webcrx="" suppressHydrationWarning>
       <head>
         <script
@@ -30,9 +32,13 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <AuthProvider>
-              <Navbar />
-              {children}
-              <Footer />
+              <AppAuthProvider>
+                <OnboardingProvider>
+                  <Navbar />
+                  {children}
+                  <Footer />
+                </OnboardingProvider>
+              </AppAuthProvider>
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
