@@ -99,6 +99,18 @@ function ModulesPageContent() {
 
   const queryClient = useQueryClient()
 
+  // Debug function to check modules
+  const debugModules = async () => {
+    try {
+      const response = await api.get('/api/modules/debug')
+      console.log('Debug response:', response.data)
+      toast.success(`Found ${response.data.totalModules} total modules, ${response.data.userModuleCount} user modules`)
+    } catch (error) {
+      console.error('Debug error:', error)
+      toast.error('Debug failed')
+    }
+  }
+
   // Delete module mutation with optimistic updates
   const deleteModuleMutation = useMutation({
     mutationFn: async (moduleId: string) => {
@@ -248,13 +260,22 @@ function ModulesPageContent() {
                 </div>
 
                 {/* Create Module Button */}
-                <Button
-                  onClick={() => setShowCreateForm(true)}
-                  className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-                >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Create Module
-                </Button>
+                            <div className="flex gap-2">
+              <Button
+                onClick={() => setShowCreateForm(true)}
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Create Module
+              </Button>
+              <Button
+                onClick={debugModules}
+                variant="outline"
+                size="sm"
+              >
+                Debug
+              </Button>
+            </div>
               </div>
             </div>
           </div>
