@@ -63,7 +63,6 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
       
       if (result.success) {
         onClose()
-        router.push('/dashboard')
       }
     } catch (error) {
       console.error('Skipping onboarding failed:', error)
@@ -72,7 +71,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
     }
   }
 
-  const handleSubmit = async () => {
+  const handleComplete = async () => {
     if (!selectedPersona) return
 
     setIsSubmitting(true)
@@ -106,7 +105,6 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
 
       if (result.success) {
         onClose()
-        router.push('/dashboard')
       }
     } catch (error) {
       console.error('Onboarding failed:', error)
@@ -250,7 +248,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
               Skip for now
             </Button>
             <Button
-              onClick={handleSubmit}
+              onClick={handleComplete}
               disabled={!selectedPersona || isSubmitting}
               className="min-w-[120px]"
             >
