@@ -27,10 +27,15 @@ interface GeneratedContent {
 }
 
 export async function POST(request: NextRequest) {
+  // Set a longer timeout for this operation
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 120000) // 2 minutes timeout
+  
   try {
     const session = await getServerSession(authOptions as any) as any
     
     if (!session?.user?.email) {
+      clearTimeout(timeoutId)
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -135,14 +140,21 @@ export async function POST(request: NextRequest) {
     })
 
     console.log('Module created successfully:', result)
+    clearTimeout(timeoutId)
     return NextResponse.json(result)
   } catch (error) {
     console.error('Error generating module:', error)
+    clearTimeout(timeoutId)
     
     // Provide more specific error messages
     let errorMessage = 'Failed to generate module'
     if (error instanceof Error) {
       errorMessage = error.message
+    }
+    
+    // Check if it's a timeout error
+    if (error instanceof Error && error.name === 'AbortError') {
+      errorMessage = 'Module generation timed out. Please try again.'
     }
     
     return NextResponse.json(

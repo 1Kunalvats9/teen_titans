@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/lib/api'
+import { useCreateModule } from '@/hooks/queries/use-modules'
 import { toast } from 'sonner'
 
 interface CreateModuleFormProps {
@@ -23,50 +22,22 @@ export function CreateModuleForm({ onClose }: CreateModuleFormProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generationStep, setGenerationStep] = useState('')
   const router = useRouter()
-  const queryClient = useQueryClient()
 
-  const createModuleMutation = useMutation({
-    mutationFn: async (data: { topic: string; description: string }) => {
-      // Simulate progress updates
-      const progressInterval = setInterval(() => {
-        setGenerationStep(prev => {
-          if (prev === '') return 'Generating prerequisites...'
-          if (prev === 'Generating prerequisites...') return 'Creating module outline...'
-          if (prev === 'Creating module outline...') return 'Writing detailed content...'
-          if (prev === 'Writing detailed content...') return 'Creating quiz questions...'
-          return 'Finalizing module...'
-        })
-      }, 3000)
+  const createModuleMutation = useCreateModule()
 
-      try {
-        const response = await api.post('/api/modules/generate', data)
-        clearInterval(progressInterval)
-        return response.data
-      } catch (error) {
-        clearInterval(progressInterval)
-        throw error
-      }
-    },
-    onSuccess: (data) => {
-      setIsGenerating(false)
-      setGenerationStep('')
-      toast.success('Module created successfully!')
-      // Invalidate and refetch modules list
-      queryClient.invalidateQueries({ queryKey: ['modules'] })
-      router.push(`/modules/${data.moduleId}`)
-      onClose()
-    },
-    onError: (error: any) => {
-      console.error('Module creation error:', error)
-      const errorMessage = error?.response?.data?.error || 
-                          error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to create module'
-      toast.error(errorMessage)
-      setIsGenerating(false)
-      setGenerationStep('')
-    },
-  })
+  // Simulate progress updates
+  const startProgressSimulation = () => {
+    const progressInterval = setInterval(() => {
+      setGenerationStep(prev => {
+        if (prev === '') return 'Generating prerequisites...'
+        if (prev === 'Generating prerequisites...') return 'Creating module outline...'
+        if (prev === 'Creating module outline...') return 'Writing detailed content...'
+        if (prev === 'Writing detailed content...') return 'Creating quiz questions...'
+        return 'Finalizing module...'
+      })
+    }, 3000)
+    return progressInterval
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,10 +53,28 @@ export function CreateModuleForm({ onClose }: CreateModuleFormProps) {
     }
 
     setIsGenerating(true)
-    createModuleMutation.mutate({
-      topic: topic.trim(),
-      description: description.trim(),
-    })
+    const progressInterval = startProgressSimulation()
+    
+    createModuleMutation.mutate(
+      {
+        topic: topic.trim(),
+        description: description.trim(),
+      },
+      {
+        onSuccess: (data) => {
+          clearInterval(progressInterval)
+          setIsGenerating(false)
+          setGenerationStep('')
+          router.push(`/modules/${data.moduleId}`)
+          onClose()
+        },
+        onError: () => {
+          clearInterval(progressInterval)
+          setIsGenerating(false)
+          setGenerationStep('')
+        }
+      }
+    )
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {

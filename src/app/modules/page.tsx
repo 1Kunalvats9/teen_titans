@@ -18,13 +18,11 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/lib/api'
 import { CreateModuleForm } from '@/components/dashboard/CreateModuleForm'
 import { AnimatePresence } from 'framer-motion'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { useModules, useDeleteModule, useDebugModules } from '@/hooks/queries/use-modules'
+import { toast } from 'sonner'
 
 interface Module {
   id: string
@@ -58,18 +56,14 @@ function ModulesPageContent() {
     }
   }, [searchParams, router])
 
-  // Fetch modules
-  const { data: modules = [], isLoading: modulesLoading } = useQuery({
-    queryKey: ['modules'],
-    queryFn: async () => {
-      const response = await api.get('/api/modules')
-      return response.data
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  })
-
-  // Remove client-side redirect since middleware handles it
-  // This prevents conflicts between server-side and client-side redirects
+  // Fetch modules using centralized hook
+  const { data: modules = [], isLoading: modulesLoading } = useModules()
+  
+  // Delete module mutation using centralized hook
+  const deleteModuleMutation = useDeleteModule()
+  
+  // Debug modules using centralized hook
+  const debugModulesQuery = useDebugModules()
 
   // Filter modules based on search query
   const filteredModules = modules.filter((module: Module) => {
@@ -97,59 +91,20 @@ function ModulesPageContent() {
     return date.toLocaleDateString()
   }
 
-  const queryClient = useQueryClient()
-
   // Debug function to check modules
   const debugModules = async () => {
     try {
-      const response = await api.get('/api/modules/debug')
-      console.log('Debug response:', response.data)
-      toast.success(`Found ${response.data.totalModules} total modules, ${response.data.userModuleCount} user modules`)
+      await debugModulesQuery.refetch()
+      const data = debugModulesQuery.data
+      if (data) {
+        console.log('Debug response:', data)
+        toast.success(`Found ${data.totalModules} total modules, ${data.userModuleCount} user modules`)
+      }
     } catch (error) {
       console.error('Debug error:', error)
       toast.error('Debug failed')
     }
   }
-
-  // Delete module mutation with optimistic updates
-  const deleteModuleMutation = useMutation({
-    mutationFn: async (moduleId: string) => {
-      const response = await api.delete(`/api/modules/${moduleId}/delete`)
-      return response.data
-    },
-    onMutate: async (moduleId) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['modules'] })
-
-      // Snapshot the previous value
-      const previousModules = queryClient.getQueryData(['modules'])
-
-      // Optimistically update to the new value
-      queryClient.setQueryData(['modules'], (old: Module[] | undefined) => {
-        if (!old) return old
-        return old.filter(module => module.id !== moduleId)
-      })
-
-      // Return a context object with the snapshotted value
-      return { previousModules }
-    },
-    onError: (err, moduleId, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
-      if (context?.previousModules) {
-        queryClient.setQueryData(['modules'], context.previousModules)
-      }
-      toast.error('Failed to remove module')
-    },
-    onSuccess: () => {
-      toast.success('Module removed from your dashboard')
-    },
-    onSettled: () => {
-      // Always refetch after error or success to ensure we have the latest data
-      queryClient.invalidateQueries({ queryKey: ['modules'] })
-      // Also invalidate dashboard stats to update module count
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
-    }
-  })
 
   const handleModuleClick = (moduleId: string) => {
     router.push(`/modules/${moduleId}`)

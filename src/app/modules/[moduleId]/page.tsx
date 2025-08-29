@@ -21,8 +21,7 @@ import {
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/lib/api'
+import { useModule } from '@/hooks/queries/use-modules'
 import { useParams } from 'next/navigation'
 import { QuizComponent } from '@/components/quiz/QuizComponent'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
@@ -73,15 +72,8 @@ export default function ModulePage() {
   const [isNavigating, setIsNavigating] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
 
-  // Fetch module data
-  const { data: module, isLoading: moduleLoading, error } = useQuery({
-    queryKey: ['module', moduleId],
-    queryFn: async () => {
-      const response = await api.get(`/api/modules/${moduleId}`)
-      return response.data
-    },
-    enabled: !!moduleId,
-  })
+  // Fetch module data using centralized hook
+  const { data: module, isLoading: moduleLoading, error } = useModule(moduleId)
 
   // Remove client-side redirect since middleware handles it
   // This prevents conflicts between server-side and client-side redirects
