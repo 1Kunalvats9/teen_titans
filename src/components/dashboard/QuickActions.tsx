@@ -1,96 +1,160 @@
 'use client'
 
-import React from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Search, Brain, MessageSquare, BookOpen, Zap } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { 
+  BookOpen, 
+  Brain, 
+  Target, 
+  Users, 
+  Zap, 
+  MessageSquare,
+  Play,
+  Plus
+} from 'lucide-react'
+import { PremiumCard } from '@/components/ui/premium-card'
 import { Button } from '@/components/ui/button'
 
 const quickActions = [
   {
-    title: 'Create Module',
-    description: 'Start a new learning module',
-    icon: Plus,
+    title: 'Start Learning',
+    description: 'Continue your modules',
+    icon: BookOpen,
     color: 'text-blue-500',
     bgColor: 'bg-blue-500/10',
-    hoverColor: 'hover:bg-blue-500/20'
+    borderColor: 'border-blue-500/20',
+    action: 'learn'
   },
   {
-    title: 'Search Modules',
-    description: 'Find existing content',
-    icon: Search,
-    color: 'text-green-500',
-    bgColor: 'bg-green-500/10',
-    hoverColor: 'hover:bg-green-500/20'
-  },
-  {
-    title: 'AI Tutor',
-    description: 'Ask your AI mentor',
+    title: 'AI Tutor Chat',
+    description: 'Get help from your tutor',
     icon: Brain,
     color: 'text-purple-500',
     bgColor: 'bg-purple-500/10',
-    hoverColor: 'hover:bg-purple-500/20'
+    borderColor: 'border-purple-500/20',
+    action: 'chat'
   },
   {
-    title: 'Study Groups',
-    description: 'Join collaborative rooms',
-    icon: MessageSquare,
+    title: 'Take Quiz',
+    description: 'Test your knowledge',
+    icon: Target,
+    color: 'text-green-500',
+    bgColor: 'bg-green-500/10',
+    borderColor: 'border-green-500/20',
+    action: 'quiz'
+  },
+  {
+    title: 'Study Group',
+    description: 'Join discussions',
+    icon: Users,
     color: 'text-orange-500',
     bgColor: 'bg-orange-500/10',
-    hoverColor: 'hover:bg-orange-500/20'
-  },
-  {
-    title: 'Practice Quiz',
-    description: 'Test your knowledge',
-    icon: BookOpen,
-    color: 'text-cyan-500',
-    bgColor: 'bg-cyan-500/10',
-    hoverColor: 'hover:bg-cyan-500/20'
+    borderColor: 'border-orange-500/20',
+    action: 'group'
   },
   {
     title: 'Flashcards',
     description: 'Review with SRS',
     icon: Zap,
-    color: 'text-yellow-500',
-    bgColor: 'bg-yellow-500/10',
-    hoverColor: 'hover:bg-yellow-500/20'
+    color: 'text-pink-500',
+    bgColor: 'bg-pink-500/10',
+    borderColor: 'border-pink-500/20',
+    action: 'flashcards'
+  },
+  {
+    title: 'New Module',
+    description: 'Explore topics',
+    icon: Plus,
+    color: 'text-cyan-500',
+    bgColor: 'bg-cyan-500/10',
+    borderColor: 'border-cyan-500/20',
+    action: 'new'
   }
 ]
 
 export function QuickActions() {
+  const handleAction = (action: string) => {
+    // Handle different actions
+    switch (action) {
+      case 'learn':
+        // Navigate to learning modules
+        console.log('Navigate to learning')
+        break
+      case 'chat':
+        // Open AI chat
+        console.log('Open AI chat')
+        break
+      case 'quiz':
+        // Navigate to quizzes
+        console.log('Navigate to quizzes')
+        break
+      case 'group':
+        // Navigate to study groups
+        console.log('Navigate to study groups')
+        break
+      case 'flashcards':
+        // Navigate to flashcards
+        console.log('Navigate to flashcards')
+        break
+      case 'new':
+        // Navigate to new modules
+        console.log('Navigate to new modules')
+        break
+    }
+  }
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Zap className="w-5 h-5 text-primary" />
-          Quick Actions
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {quickActions.map((action, index) => (
+    <PremiumCard 
+      icon={<Play className="w-5 h-5" />}
+      title="Quick Actions"
+      subtitle="Jump into your learning"
+    >
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {quickActions.map((action, index) => {
+          const Icon = action.icon
+          return (
             <motion.div
               key={action.title}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <Button
-                variant="ghost"
-                className={`h-auto p-4 flex flex-col items-center gap-3 w-full ${action.hoverColor} transition-all duration-300 group`}
+              <button
+                onClick={() => handleAction(action.action)}
+                className="group w-full p-4 rounded-xl border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg cursor-pointer"
               >
-                <div className={`p-3 rounded-xl ${action.bgColor} group-hover:scale-110 transition-transform duration-300`}>
-                  <action.icon className={`w-6 h-6 ${action.color}`} />
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl border ${action.bgColor} ${action.borderColor} group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon className={`h-6 w-6 ${action.color}`} />
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
+                      {action.title}
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {action.description}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <div className="font-semibold text-foreground text-sm">{action.title}</div>
-                  <div className="text-xs text-muted-foreground">{action.description}</div>
-                </div>
-              </Button>
+              </button>
             </motion.div>
-          ))}
+          )
+        })}
+      </div>
+      
+      {/* Additional Actions */}
+      <div className="mt-6 pt-6 border-t border-border/50">
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1 gap-2 cursor-pointer">
+            <MessageSquare className="w-4 h-4" />
+            Ask AI
+          </Button>
+          <Button variant="outline" className="flex-1 gap-2 cursor-pointer">
+            <Target className="w-4 h-4" />
+            Practice
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </PremiumCard>
   )
 }

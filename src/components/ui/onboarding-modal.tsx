@@ -4,7 +4,9 @@ import React, { useState } from 'react'
 import { Button } from './button'
 import { FileInput } from './file-input'
 import { useAuth } from '@/hooks/auth'
-import { useRouter } from 'next/navigation'
+import { useUploadProfileImage } from '@/hooks/queries/use-auth'
+import { useQueryClient } from '@tanstack/react-query'
+import { userStatusKeys } from '@/hooks/queries/use-user-status'
 
 const PERSONAS = [
   {
@@ -39,11 +41,13 @@ interface OnboardingModalProps {
 
 export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
   const { completeOnboarding } = useAuth()
-  const router = useRouter()
+  const uploadProfileImage = useUploadProfileImage()
+  const queryClient = useQueryClient()
   const [selectedPersona, setSelectedPersona] = useState<Persona | ''>('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string>('')
 
   React.useEffect(() => {
     if (selectedFile) {
@@ -57,15 +61,21 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
 
   const handleSkip = async () => {
     setIsSubmitting(true)
+    setError('')
     try {
       // Complete onboarding with no persona or image
       const result = await completeOnboarding({})
       
       if (result.success) {
+        // Invalidate user status to refresh onboarding status
+        queryClient.invalidateQueries({ queryKey: userStatusKeys.all })
         onClose()
+      } else {
+        setError(result.message || 'Failed to complete onboarding')
       }
     } catch (error) {
       console.error('Skipping onboarding failed:', error)
+      setError('Failed to complete onboarding')
     } finally {
       setIsSubmitting(false)
     }
@@ -75,26 +85,18 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
     if (!selectedPersona) return
 
     setIsSubmitting(true)
+    setError('')
     try {
       let uploadedUrl: string | undefined
       
       if (selectedFile) {
-        // Convert file to base64 for upload
-        const base64 = await new Promise<string>((resolve) => {
-          const reader = new FileReader()
-          reader.onloadend = () => resolve(reader.result as string)
-          reader.readAsDataURL(selectedFile)
-        })
-
-        const res = await fetch('/api/user/profile-image', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ file: base64 })
-        })
-        
-        if (res.ok) {
-          const data = await res.json()
-          uploadedUrl = data.user?.image
+        // Upload profile image using the service
+        const result = await uploadProfileImage.mutateAsync(selectedFile)
+        if (result.success) {
+          uploadedUrl = result.imageUrl
+        } else {
+          setError('Failed to upload profile image')
+          return
         }
       }
 
@@ -104,10 +106,15 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
       })
 
       if (result.success) {
+        // Invalidate user status to refresh onboarding status
+        queryClient.invalidateQueries({ queryKey: userStatusKeys.all })
         onClose()
+      } else {
+        setError(result.message || 'Failed to complete onboarding')
       }
     } catch (error) {
       console.error('Onboarding failed:', error)
+      setError('Failed to complete onboarding')
     } finally {
       setIsSubmitting(false)
     }
@@ -142,6 +149,12 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
 
         {/* Content */}
         <div className="p-6 space-y-8">
+          {/* Error Display */}
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+              <p className="text-destructive text-sm">{error}</p>
+            </div>
+          )}
           {/* Persona Selection */}
           <div className="space-y-4">
             <div>

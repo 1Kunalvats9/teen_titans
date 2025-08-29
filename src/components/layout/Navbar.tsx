@@ -2,15 +2,16 @@
 'use client';
 
 import React from 'react';
-import { motion, Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { BrainCircuit, Menu, User, LogOut, LayoutDashboard } from 'lucide-react';
-import { useSession, signOut } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
+import { useStableSession } from '@/hooks/use-stable-session';
 import ThemeToggleButton from '@/components/ui/theme-toggle-button';
 import Link from 'next/link';
 
 export const Navbar = () => {
   const navLinks = ['Features', 'Pricing', 'Community'];
-  const { data: session } = useSession();
+  const { data: session } = useStableSession();
 
   return (
     <motion.nav

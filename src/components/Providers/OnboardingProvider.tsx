@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/auth'
 import { OnboardingModal } from '@/components/ui/onboarding-modal'
 import { usePathname } from 'next/navigation'
+import { useUserStatus } from '@/hooks/queries/use-user-status'
 
 interface OnboardingContextType {
   showOnboarding: () => void
@@ -14,7 +15,8 @@ interface OnboardingContextType {
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined)
 
 export function OnboardingProvider({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
+  const { data: userStatus, isLoading: statusLoading } = useUserStatus(isAuthenticated && !isLoading)
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
   const [hasShownOnboarding, setHasShownOnboarding] = useState(false)
   const pathname = usePathname()
@@ -22,23 +24,19 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     // Only show onboarding modal if:
     // 1. User is authenticated and not loading
-    // 2. User is not onboarded
+    // 2. User is not onboarded (from database)
     // 3. We haven't shown it yet for this session
     // 4. User is not on auth pages (login/signup)
+    // 5. Status is not loading
     const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/signup')
     
-    if (
-      isAuthenticated && 
-      !isLoading && 
-      user && 
-      !user.isOnboarded && 
-      !hasShownOnboarding && 
-      !isAuthPage
-    ) {
+    if (isLoading || statusLoading || !isAuthenticated || isAuthPage) return
+    
+    if (userStatus && !userStatus.isOnboarded && !hasShownOnboarding) {
       setIsOnboardingOpen(true)
       setHasShownOnboarding(true)
     }
-  }, [user, isAuthenticated, isLoading, hasShownOnboarding, pathname])
+  }, [userStatus, isAuthenticated, isLoading, statusLoading, hasShownOnboarding, pathname])
 
   const showOnboarding = () => {
     setIsOnboardingOpen(true)

@@ -1,96 +1,153 @@
 'use client'
 
-import React from 'react'
 import { motion } from 'framer-motion'
-import { BookOpen, Brain, Target, Users, TrendingUp, Award } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
-import type { AuthUser } from '@/hooks/auth'
+import { 
+  BookOpen, 
+  Target, 
+  Clock, 
+  TrendingUp, 
+  Award, 
+  Zap
+} from 'lucide-react'
+import { PremiumCard } from '@/components/ui/premium-card'
+import { useDashboardStats } from '@/hooks/queries/use-dashboard'
 
-interface StatsOverviewProps {
-  user: AuthUser
-}
-
-const statsData = [
+const stats = [
   {
-    title: 'Modules Completed',
-    value: '12',
-    change: '+3 this week',
+    title: 'Total Modules',
+    value: 'modules',
     icon: BookOpen,
     color: 'text-blue-500',
-    bgColor: 'bg-blue-500/10'
+    bgColor: 'bg-blue-500/10',
+    borderColor: 'border-blue-500/20'
   },
   {
-    title: 'AI Sessions',
-    value: '47',
-    change: '+8 today',
-    icon: Brain,
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-500/10'
-  },
-  {
-    title: 'Quiz Accuracy',
-    value: '89%',
-    change: '+5% improvement',
+    title: 'Completed',
+    value: 'completedModules',
     icon: Target,
     color: 'text-green-500',
-    bgColor: 'bg-green-500/10'
+    bgColor: 'bg-green-500/10',
+    borderColor: 'border-green-500/20'
   },
   {
-    title: 'Study Groups',
-    value: '3',
-    change: 'Active',
-    icon: Users,
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-500/10'
+    title: 'Study Time',
+    value: 'totalStudyTime',
+    icon: Clock,
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-500/10',
+    borderColor: 'border-purple-500/20'
   },
   {
-    title: 'Learning Streak',
-    value: '15',
-    change: 'days',
+    title: 'Avg Score',
+    value: 'averageScore',
     icon: TrendingUp,
-    color: 'text-cyan-500',
-    bgColor: 'bg-cyan-500/10'
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-500/10',
+    borderColor: 'border-orange-500/20'
   },
   {
-    title: 'Badges Earned',
-    value: '8',
-    change: '2 new',
+    title: 'Quizzes Taken',
+    value: 'totalQuizzes',
     icon: Award,
-    color: 'text-yellow-500',
-    bgColor: 'bg-yellow-500/10'
+    color: 'text-pink-500',
+    bgColor: 'bg-pink-500/10',
+    borderColor: 'border-pink-500/20'
+  },
+  {
+    title: 'Weekly Progress',
+    value: 'weeklyProgress',
+    icon: Zap,
+    color: 'text-cyan-500',
+    bgColor: 'bg-cyan-500/10',
+    borderColor: 'border-cyan-500/20'
   }
 ]
 
-export function StatsOverview({ user }: StatsOverviewProps) {
+export function StatsOverview() {
+  const { data: dashboardStats, isLoading, error } = useDashboardStats()
+
+  const getStatValue = (key: string) => {
+    if (!dashboardStats) return 0
+    
+    switch (key) {
+      case 'modules':
+        return dashboardStats.totalModules || 0
+      case 'completedModules':
+        return dashboardStats.completedModules || 0
+      case 'totalStudyTime':
+        return `${Math.round((dashboardStats.totalStudyTime || 0) / 60)}h` // Convert to hours
+      case 'averageScore':
+        return `${dashboardStats.averageScore || 0}%`
+      case 'totalQuizzes':
+        return dashboardStats.totalQuizzes || 0
+      case 'weeklyProgress':
+        return `${dashboardStats.weeklyProgress || 0}`
+      default:
+        return 0
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <PremiumCard key={i} className="h-32">
+            <div className="animate-pulse">
+              <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+              <div className="h-8 bg-muted rounded w-1/2"></div>
+            </div>
+          </PremiumCard>
+        ))}
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <PremiumCard key={i} className="h-32">
+            <div className="text-center text-muted-foreground">
+              <p>Failed to load stats</p>
+            </div>
+          </PremiumCard>
+        ))}
+      </div>
+    )
+  }
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      {statsData.map((stat, index) => (
-        <motion.div
-          key={stat.title}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
-        >
-          <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {stats.map((stat, index) => {
+        const Icon = stat.icon
+        return (
+          <motion.div
+            key={stat.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+          >
+            <PremiumCard 
+              variant="default" 
+              className="h-32 flex flex-col justify-center"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">
+                    {stat.title}
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {getStatValue(stat.value)}
+                  </p>
+                </div>
+                <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.bgColor} ${stat.borderColor} border`}>
+                  <Icon className={`h-6 w-6 ${stat.color}`} />
                 </div>
               </div>
-              
-              <div className="space-y-1">
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                <div className="text-xs font-medium text-muted-foreground">{stat.title}</div>
-                <div className="text-xs text-primary">{stat.change}</div>
-              </div>
-              
-              {/* Hover Effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </CardContent>
-          </Card>
-        </motion.div>
-      ))}
+            </PremiumCard>
+          </motion.div>
+        )
+      })}
     </div>
   )
 }
