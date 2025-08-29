@@ -106,12 +106,12 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       await update()
       
       // Redirect to dashboard after successful onboarding
-      router.push('/dashboard')
       return { success: true }
     } catch (e) {
+      console.error('Complete onboarding error:', e)
       return { success: false, message: 'Failed to complete onboarding' }
     }
-  }, [router, update])
+  }, [update])
 
   const value = useMemo<AuthContextType>(() => ({
     user,
