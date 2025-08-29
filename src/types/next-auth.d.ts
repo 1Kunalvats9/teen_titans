@@ -1,5 +1,3 @@
-import NextAuth from "next-auth"
-
 declare module "next-auth" {
   interface Session {
     user: {
@@ -8,6 +6,9 @@ declare module "next-auth" {
       email?: string | null
       image?: string | null
       emailVerified?: Date | null
+      isOnboarded?: boolean
+      persona?: string | null
+      onboardingStep?: number
     }
   }
 
@@ -17,6 +18,9 @@ declare module "next-auth" {
     email?: string | null
     image?: string | null
     emailVerified?: Date | null
+    isOnboarded?: boolean
+    persona?: string | null
+    onboardingStep?: number
   }
 }
 
@@ -27,5 +31,8 @@ declare module "next-auth/jwt" {
     email?: string | null
     image?: string | null
     emailVerified?: Date | null
+    isOnboarded?: boolean
+    persona?: string | null
+    onboardingStep?: number
   }
 }

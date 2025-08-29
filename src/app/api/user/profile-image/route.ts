@@ -1,66 +1,67 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-import prisma from '@/lib/prisma'
-import { uploadImage } from '@/lib/cloudinary'
-import { Session } from 'next-auth' // Import the Session type
 
-export async function POST(request: NextRequest) {
+import { NextResponse } from 'next/server'
+import prisma from '@/lib/prisma'
+import { getServerSession } from 'next-auth/next'
+import type { Session } from 'next-auth'
+import { authOptions } from '../../auth/[...nextauth]/route'
+import cloudinary from '@/lib/cloudinary'
+
+export async function POST(req: Request) {
   try {
-    // Check authentication
-    const session: Session | null = await getServerSession(authOptions)
+    const session = (await (getServerSession as unknown as (opts?: unknown) => Promise<Session | null>)(authOptions))
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    // Get form data
-    const formData = await request.formData()
-    const imageFile = formData.get('image') as File
-
-    if (!imageFile) {
-      return NextResponse.json({ error: 'No image file provided' }, { status: 400 })
+    const { file, folder } = await req.json()
+    if (!file) {
+      return NextResponse.json({ error: 'file (base64 or remote url) required' }, { status: 400 })
     }
 
-    // Validate file type
-    if (!imageFile.type.startsWith('image/')) {
-      return NextResponse.json({ error: 'Invalid file type. Only images are allowed.' }, { status: 400 })
+    // Validate that required environment variables are set
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      console.error('Cloudinary environment variables are missing')
+      return NextResponse.json({ error: 'Cloudinary configuration error' }, { status: 500 })
     }
 
-    // Validate file size (max 5MB)
-    if (imageFile.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File size too large. Maximum size is 5MB.' }, { status: 400 })
+    // Validate file format (should be base64 data URL)
+    if (!file.startsWith('data:image/')) {
+      console.error('Invalid file format. Expected base64 data URL, got:', file.substring(0, 100))
+      return NextResponse.json({ error: 'Invalid file format. Expected base64 data URL' }, { status: 400 })
     }
 
-    // Convert file to buffer
-    const bytes = await imageFile.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
-    // Upload to Cloudinary
-    const uploadResult = await uploadImage(buffer)
+    console.log('Starting Cloudinary upload...')
+    console.log('File size (approx):', Math.round(file.length * 0.75), 'bytes')
     
-    if (!uploadResult || typeof uploadResult === 'string') {
-      throw new Error('Failed to upload image')
-    }
+    const upload = await cloudinary.uploader.upload(file, {
+      folder: folder || 'teen_titans/profile_images',
+      overwrite: true,
+      unique_filename: true,
+      resource_type: 'image',
+    })
+    console.log('Cloudinary upload successful:', upload.secure_url)
 
-    const imageUrl = uploadResult.secure_url
-
-    // Update user profile in database
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { id: session.user.id },
-      data: { image: imageUrl }
+      data: { image: upload.secure_url },
+      select: { id: true, image: true }
     })
 
+    return NextResponse.json({ success: true, user })
+  } catch (e) {
+    console.error('Profile image upload error:', e)
+    
+    // Check if it's a Cloudinary-specific error
+    if (e instanceof Error && e.message.includes('cloudinary')) {
+      return NextResponse.json({ 
+        error: 'Cloudinary upload failed', 
+        details: e.message
+      }, { status: 500 })
+    }
+    
     return NextResponse.json({ 
-      success: true, 
-      imageUrl,
-      message: 'Profile picture updated successfully' 
-    })
-
-  } catch (error) {
-    console.error('Profile image upload error:', error)
-    return NextResponse.json(
-      { error: 'Failed to upload profile image' }, 
-      { status: 500 }
-    )
+      error: 'Failed to save image', 
+      details: e instanceof Error ? e.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
+

@@ -17,7 +17,7 @@ export const Navbar = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: 'easeInOut' }}
-      className="fixed top-0 text-foreground left-0 right-0 z-50 py-4 px-6 md:px-12 bg-background/80 backdrop-blur-sm border-b border-border"
+      className="fixed top-0 text-foreground left-0 right-0 z-50 py-4 px-6 md:px-12 bg-transparent  border-b border-border"
     >
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}

@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { signIn } from "next-auth/react"
+import { useAuth } from "@/hooks/auth"
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,6 +13,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { login, loginGoogle, isLoading } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
@@ -29,18 +31,9 @@ export function LoginForm({
     
     setLoading(true)
     try {
-      const res = await signIn('credentials', { 
-        redirect: false, 
-        email, 
-        password 
-      })
-      
-      if (res?.error) {
-        setError('Invalid email or password')
-      } else if (res?.ok) {
-        // Redirect to login page to show user is logged in
-        router.push('/login')
-      }
+      const res = await login(email, password)
+      if (!res.success) setError(res.message || 'Invalid email or password')
+      else router.push('/')
     } finally {
       setLoading(false)
     }
@@ -81,7 +74,7 @@ export function LoginForm({
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Logging in...' : 'Login'}
             </Button>
-            <Button variant="outline" className="w-full" type="button" onClick={() => signIn('google')}>
+            <Button variant="outline" className="w-full" type="button" onClick={() => loginGoogle()}>
               Login with Google
             </Button>
           </div>

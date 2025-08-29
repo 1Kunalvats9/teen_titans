@@ -9,7 +9,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import Link from 'next/link';
-
+import HeroGridSection from '@/components/ui/HeroGridSection';
 gsap.registerPlugin(ScrollTrigger);
 
 export default function LandingPage() {
@@ -71,7 +71,6 @@ export default function LandingPage() {
         ScrollTrigger.update();
       }
     };
-    // @ts-ignore - lenis has on method
     lenis.on('scroll', onScroll);
 
     let rafId: number;
@@ -83,7 +82,6 @@ export default function LandingPage() {
 
     return () => {
       cancelAnimationFrame(rafId);
-      // @ts-ignore
       lenis.off?.('scroll', onScroll);
       lenis.destroy();
     };
@@ -91,43 +89,7 @@ export default function LandingPage() {
 
   return (
     <main className="bg-background text-foreground min-h-screen">
-      {/* Hero Section */}
-      <section className="min-h-screen flex items-center justify-center pt-24" ref={heroRef}>
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="container mx-auto text-center px-4"
-        >
-          <motion.h1
-            variants={itemVariants}
-            className="hero-heading text-4xl md:text-6xl lg:text-7xl font-bold leading-tight"
-          >
-            Build Your Personal <span className="text-primary">Learning OS</span>
-            <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-b from-zinc-100 via-zinc-400 to-zinc-700">AI Tutors • Modules • Quizzes • Community</span>
-          </motion.h1>
-          <motion.p
-            variants={itemVariants}
-            className="hero-subtext mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
-          >
-            Learn anything, faster. Generate personalized modules, practice with spaced repetition flashcards,
-            solve doubts with your AI mentor, and grow with peers.
-          </motion.p>
-          <motion.div variants={itemVariants} className="mt-10 hero-cta">
-            <Link href="/signup">
-              <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                className="bg-primary text-primary-foreground font-semibold px-6 py-3 rounded-lg flex items-center gap-2 mx-auto shadow-sm"
-              >
-                Get Started for Free
-                <ArrowRight size={20} />
-              </motion.button>
-            </Link>
-          </motion.div>
-        </motion.div>
-      </section>
-
+      <HeroGridSection />
       <Features />
     </main>
   );

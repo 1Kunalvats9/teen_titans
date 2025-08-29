@@ -42,6 +42,7 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String? // Optional for OAuth providers
+  isOnboarded   Boolean   @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -54,8 +55,8 @@ model User {
   // AI Persona Preference
   persona String? // e.g., "Einstein", "Steve Jobs"
 
-  verificationToken        String?
-  verificationTokenExpiry  DateTime?
+  verificationToken       String?
+  verificationTokenExpiry DateTime?
 
   // Relations from your original schema
   createdModules      Module[]
@@ -115,7 +116,6 @@ model Badge {
   users   User[]
 }
 
-
 // ========== LEARNING CONTENT ==========
 
 model Module {
@@ -127,7 +127,7 @@ model Module {
 
   // Relations
   creatorId       String?
-  creator         User?             @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  creator         User?            @relation(fields: [creatorId], references: [id], onDelete: SetNull)
   steps           Step[]
   resources       Resource[]
   quizzes         Quiz[]
@@ -287,17 +287,17 @@ model Project {
 
 // New model to group conversation messages
 model AiConversation {
-  id        String      @id @default(cuid())
-  title     String?     // e.g., "Questions about Module 1"
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id        String   @id @default(cuid())
+  title     String? // e.g., "Questions about Module 1"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  userId    String
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  AiMessage[]
-  moduleId  String?
-  module    Module?     @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  userId   String
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AiMessage[]
+  moduleId String?
+  module   Module?     @relation(fields: [moduleId], references: [id], onDelete: SetNull)
 
   @@index([userId])
 }
@@ -324,8 +324,8 @@ model ChatRoom {
   description String?
   createdAt   DateTime @default(now())
 
-  moduleId String?  @unique
-  module   Module?  @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  moduleId String? @unique
+  module   Module? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
 
   // Relations
   members  ChatRoomMember[]
