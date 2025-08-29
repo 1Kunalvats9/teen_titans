@@ -31,7 +31,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
         alert(res.message || 'Signup failed')
         return
       }
-      router.push('/')
+      // Show success message and redirect to login
+      alert('Account created successfully! You can now log in.')
+      router.push('/login')
     } finally {
       setLoading(false)
     }

@@ -2,15 +2,16 @@
 'use client';
 
 import React from 'react';
-import { motion, Variants } from 'framer-motion';
-import { BrainCircuit, Menu, User, LogOut } from 'lucide-react';
-import { useSession, signOut } from 'next-auth/react';
+import { motion } from 'framer-motion';
+import { BrainCircuit, Menu, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { signOut } from 'next-auth/react';
+import { useStableSession } from '@/hooks/use-stable-session';
 import ThemeToggleButton from '@/components/ui/theme-toggle-button';
 import Link from 'next/link';
 
 export const Navbar = () => {
   const navLinks = ['Features', 'Pricing', 'Community'];
-  const { data: session } = useSession();
+  const { data: session } = useStableSession();
 
   return (
     <motion.nav
@@ -21,10 +22,10 @@ export const Navbar = () => {
     >
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <BrainCircuit className="text-creame" size={28} />
           <h1 className="text-xl font-bold text-primary">LearnOS</h1>
-        </div>
+        </Link>
 
         {/* Desktop Navigation Links */}
         <ul className="hidden md:flex items-center gap-8">
@@ -40,6 +41,16 @@ export const Navbar = () => {
           <ThemeToggleButton />
           {session?.user ? (
             <div className="flex items-center gap-3">
+              <Link href="/dashboard">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }} 
+                  className="flex items-center gap-2 px-3 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+                  title="Dashboard"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span className="text-sm font-medium">Dashboard</span>
+                </motion.button>
+              </Link>
               <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
                 <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
                   <User className="w-4 h-4 text-primary" />

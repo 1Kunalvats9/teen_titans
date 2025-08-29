@@ -1,9 +1,10 @@
 'use client'
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { signIn, signOut, useSession } from 'next-auth/react'
+import { signIn, signOut } from 'next-auth/react'
 import type { Session } from 'next-auth'
-import { useRouter } from 'next/navigation'
+import { useStableSession } from './use-stable-session'
+import { useCompleteOnboarding } from './queries/use-auth'
 
 type Persona = 'Einstein' | 'Steve Jobs' | 'Casual Friend' | null
 
@@ -15,7 +16,8 @@ export interface AuthUser {
   emailVerified?: Date | null
   isOnboarded?: boolean
   persona?: Persona | string | null
-  onboardingStep?: number
+  xp?: number
+  streak?: number
 }
 
 interface AuthContextType {
@@ -33,14 +35,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AppAuthProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
-  const { data: session, status, update } = useSession()
+  const { data: session, status, update } = useStableSession()
   const [user, setUser] = useState<AuthUser | null>(null)
+
+
 
   useEffect(() => {
     const s = session as Session | null
     if (s?.user) {
-      setUser({
+      const newUser = {
         id: s.user.id,
         name: s.user.name,
         email: s.user.email,
@@ -48,7 +51,24 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
         emailVerified: s.user.emailVerified ?? null,
         isOnboarded: (s.user as unknown as { isOnboarded?: boolean })?.isOnboarded ?? false,
         persona: (s.user as unknown as { persona?: string | null })?.persona ?? null,
-        onboardingStep: (s.user as unknown as { onboardingStep?: number })?.onboardingStep ?? 0,
+        xp: (s.user as unknown as { xp?: number })?.xp ?? 0,
+        streak: (s.user as unknown as { streak?: number })?.streak ?? 0,
+      }
+      
+      // Only update if the user data has actually changed
+      setUser(prevUser => {
+        if (!prevUser || 
+            prevUser.id !== newUser.id ||
+            prevUser.name !== newUser.name ||
+            prevUser.email !== newUser.email ||
+            prevUser.image !== newUser.image ||
+            prevUser.isOnboarded !== newUser.isOnboarded ||
+            prevUser.persona !== newUser.persona ||
+            prevUser.xp !== newUser.xp ||
+            prevUser.streak !== newUser.streak) {
+          return newUser
+        }
+        return prevUser
       })
     } else {
       setUser(null)
@@ -90,28 +110,27 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
     await update()
   }, [update])
 
+  const completeOnboardingMutation = useCompleteOnboarding()
+
   const completeOnboarding = useCallback(async (payload: { persona?: Persona | string; imageUrl?: string }) => {
     try {
-      const res = await fetch('/api/user/complete-onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        return { success: false, message: data.error || 'Failed to complete onboarding' }
+      const cleanPayload = {
+        persona: payload.persona || undefined,
+        imageUrl: payload.imageUrl
+      }
+      const result = await completeOnboardingMutation.mutateAsync(cleanPayload)
+      
+      // If successful, invalidate user status to refresh onboarding status
+      if (result.success) {
+        // Note: The mutation already handles invalidation in the query hook
       }
       
-      // Update the session to reflect onboarding completion
-      await update()
-      
-      // Redirect to dashboard after successful onboarding
-      router.push('/dashboard')
-      return { success: true }
+      return result
     } catch (e) {
+      console.error('Complete onboarding error:', e)
       return { success: false, message: 'Failed to complete onboarding' }
     }
-  }, [router, update])
+  }, [completeOnboardingMutation])
 
   const value = useMemo<AuthContextType>(() => ({
     user,

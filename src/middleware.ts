@@ -10,15 +10,23 @@ export async function middleware(req: NextRequest) {
 
   // Only guard dashboard routes
   if (pathname.startsWith('/dashboard')) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+    try {
+      const token = await getToken({ 
+        req, 
+        secret: process.env.NEXTAUTH_SECRET 
+      })
 
-    if (!token) {
-      const url = new URL('/login', req.url)
-      return NextResponse.redirect(url)
+      // Only redirect if there's definitely no token
+      // If there's an error or token is undefined, let client-side handle it
+      if (token === null) {
+        const url = new URL('/login', req.url)
+        return NextResponse.redirect(url)
+      }
+    } catch (error) {
+      // If there's an error checking the token, allow the request to continue
+      // The client-side auth check will handle it properly
+      console.error('Middleware auth error:', error)
     }
-
-    // Note: Onboarding is now handled by a modal, so we don't redirect to onboarding page
-    // Users will see the onboarding modal automatically if they're not onboarded
   }
 
   return NextResponse.next()

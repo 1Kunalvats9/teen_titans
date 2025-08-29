@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     const verificationTokenExpiry = new Date(Date.now() + 3600 * 1000); // Expires in 1 hour
 
     // 2. Create the user with the token
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         name,
         email,
