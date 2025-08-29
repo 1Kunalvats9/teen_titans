@@ -157,9 +157,9 @@ export function QuizComponent({ quiz, onClose }: QuizComponentProps) {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
+        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm overflow-y-auto"
       >
-        <Card className="w-full max-w-2xl shadow-2xl border-border/50 bg-background/95 backdrop-blur-md my-8">
+        <Card className="w-full max-w-2xl shadow-2xl border-border/50 bg-background/95 backdrop-blur-md my-8 max-h-[90vh] overflow-y-auto">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
               {isPassing ? (
@@ -223,23 +223,23 @@ export function QuizComponent({ quiz, onClose }: QuizComponentProps) {
                         <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
                       )}
                       <div className="flex-1">
-                        <div className="font-medium">
+                        <div className="font-medium break-words overflow-wrap-anywhere">
                           Question {index + 1}: {question.text}
                         </div>
                         {selectedOption && (
-                          <div className={`text-sm mt-1 ${
+                          <div className={`text-sm mt-1 break-words overflow-wrap-anywhere ${
                             isCorrect ? 'text-green-600' : 'text-red-600'
                           }`}>
                             Your answer: {selectedOption.text}
                           </div>
                         )}
                         {!isCorrect && (
-                          <div className="text-sm text-green-600 mt-1">
+                          <div className="text-sm text-green-600 mt-1 break-words overflow-wrap-anywhere">
                             Correct answer: {question.options.find(opt => opt.isCorrect)?.text}
                           </div>
                         )}
                         {question.explanation && (
-                          <div className="text-sm text-muted-foreground mt-2">
+                          <div className="text-sm text-muted-foreground mt-2 break-words overflow-wrap-anywhere">
                             {question.explanation}
                           </div>
                         )}
@@ -309,7 +309,7 @@ export function QuizComponent({ quiz, onClose }: QuizComponentProps) {
         <CardContent className="space-y-6">
           {/* Question */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">
+            <h3 className="text-lg font-medium break-words overflow-wrap-anywhere">
               {currentQuestion.text}
             </h3>
             
@@ -338,7 +338,7 @@ export function QuizComponent({ quiz, onClose }: QuizComponentProps) {
                       }`}>
                         {isSelected && <CheckCircle className="h-4 w-4" />}
                       </div>
-                      <span className="font-medium">{option.text}</span>
+                                              <span className="font-medium break-words overflow-wrap-anywhere">{option.text}</span>
                     </div>
                   </motion.button>
                 )

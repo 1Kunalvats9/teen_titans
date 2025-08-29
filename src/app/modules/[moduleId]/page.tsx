@@ -14,15 +14,18 @@ import {
   Target,
   ChevronRight,
   ChevronLeft,
-  Play
+  Play,
+  Bookmark,
+  Share2,
+  MessageSquare
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/lib/api'
+import { useModule } from '@/hooks/queries/use-modules'
 import { useParams } from 'next/navigation'
 import { QuizComponent } from '@/components/quiz/QuizComponent'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { EnhancedContent } from '@/components/ui/enhanced-content'
 
 interface Step {
   id: string
@@ -67,16 +70,10 @@ export default function ModulePage() {
   const [currentStep, setCurrentStep] = useState(0)
   const [showQuiz, setShowQuiz] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState(false)
 
-  // Fetch module data
-  const { data: module, isLoading: moduleLoading, error } = useQuery({
-    queryKey: ['module', moduleId],
-    queryFn: async () => {
-      const response = await api.get(`/api/modules/${moduleId}`)
-      return response.data
-    },
-    enabled: !!moduleId,
-  })
+  // Fetch module data using centralized hook
+  const { data: module, isLoading: moduleLoading, error } = useModule(moduleId)
 
   // Remove client-side redirect since middleware handles it
   // This prevents conflicts between server-side and client-side redirects
@@ -175,9 +172,28 @@ export default function ModulePage() {
               </div>
 
               <div className="text-center mb-6">
-                <h1 className="text-4xl font-bold text-foreground mb-2">
-                  {module.title}
-                </h1>
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <h1 className="text-4xl font-bold text-foreground">
+                    {module.title}
+                  </h1>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsBookmarked(!isBookmarked)}
+                      className="hover:bg-background/50"
+                    >
+                      <Bookmark className={`h-5 w-5 ${isBookmarked ? 'text-primary fill-primary' : 'text-muted-foreground'}`} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="hover:bg-background/50"
+                    >
+                      <Share2 className="h-5 w-5 text-muted-foreground" />
+                    </Button>
+                  </div>
+                </div>
                 {module.description && (
                   <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
                     {module.description}
@@ -328,9 +344,10 @@ export default function ModulePage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div 
-                      className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:bg-muted prose-code:text-foreground prose-pre:bg-muted prose-pre:text-foreground"
-                      dangerouslySetInnerHTML={{ __html: currentStepData.content }}
+                    <EnhancedContent 
+                      content={currentStepData.content}
+                      stepNumber={currentStep + 1}
+                      totalSteps={module.steps.length}
                     />
                   </CardContent>
                 </Card>
@@ -375,6 +392,39 @@ export default function ModulePage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Floating Action Button */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1, duration: 0.5 }}
+        className="fixed bottom-6 right-6 z-50"
+      >
+        <div className="flex flex-col gap-3">
+          <Button
+            size="lg"
+            className="rounded-full w-14 h-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+            onClick={() => {
+              const element = document.querySelector('.lg\\:col-span-3')
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' })
+              }
+            }}
+          >
+            <MessageSquare className="h-6 w-6" />
+          </Button>
+        </div>
+      </motion.div>
+
+      {/* Reading Progress Bar */}
+      <div className="fixed top-0 left-0 w-full h-1 bg-muted/20 z-40">
+        <motion.div
+          className="h-full bg-gradient-to-r from-primary to-primary/80"
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.5 }}
+        />
       </div>
 
       {/* Quiz Modal */}

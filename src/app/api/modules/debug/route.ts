@@ -26,13 +26,32 @@ export async function GET(_request: NextRequest) {
       )
     }
 
-    // Fetch all public modules and user's own modules
-    const modules = await prisma.module.findMany({
+    // Fetch all modules for debugging
+    const allModules = await prisma.module.findMany({
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        _count: {
+          select: {
+            steps: true,
+            quizzes: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    // Fetch user's modules specifically
+    const userModules = await prisma.module.findMany({
       where: {
-        OR: [
-          { isPublic: true },
-          { creatorId: user.id }
-        ]
+        creatorId: user.id
       },
       include: {
         creator: {
@@ -54,11 +73,21 @@ export async function GET(_request: NextRequest) {
       }
     })
 
-    return NextResponse.json(modules)
+    return NextResponse.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name
+      },
+      allModules,
+      userModules,
+      totalModules: allModules.length,
+      userModuleCount: userModules.length
+    })
   } catch (error) {
-    console.error('Error fetching modules:', error)
+    console.error('Error in debug endpoint:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

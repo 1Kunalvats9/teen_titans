@@ -27,10 +27,15 @@ interface GeneratedContent {
 }
 
 export async function POST(request: NextRequest) {
+  // Set a longer timeout for this operation
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 120000) // 2 minutes timeout
+  
   try {
     const session = await getServerSession(authOptions as any) as any
     
     if (!session?.user?.email) {
+      clearTimeout(timeoutId)
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -66,6 +71,8 @@ export async function POST(request: NextRequest) {
 
     // Create module with all related data in a transaction
     const result = await prisma.$transaction(async (tx) => {
+      console.log('Starting module creation transaction...')
+      
       // Create the module
       const moduleData = await tx.module.create({
         data: {
@@ -75,8 +82,11 @@ export async function POST(request: NextRequest) {
           isPublic: true
         }
       })
+      
+      console.log('Module created:', moduleData.id)
 
       // Create steps
+      console.log('Creating steps...')
       await Promise.all(
         generatedContent.steps.map((step, index) =>
           tx.step.create({
@@ -89,14 +99,17 @@ export async function POST(request: NextRequest) {
           })
         )
       )
+      console.log('Steps created successfully')
 
       // Create quiz
+      console.log('Creating quiz...')
       const quiz = await tx.quiz.create({
         data: {
           title: `${topic} Quiz`,
           moduleId: moduleData.id
         }
       })
+      console.log('Quiz created:', quiz.id)
 
       // Create questions and options
       await Promise.all(
@@ -126,11 +139,26 @@ export async function POST(request: NextRequest) {
       return { moduleId: moduleData.id }
     })
 
+    console.log('Module created successfully:', result)
+    clearTimeout(timeoutId)
     return NextResponse.json(result)
   } catch (error) {
     console.error('Error generating module:', error)
+    clearTimeout(timeoutId)
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to generate module'
+    if (error instanceof Error) {
+      errorMessage = error.message
+    }
+    
+    // Check if it's a timeout error
+    if (error instanceof Error && error.name === 'AbortError') {
+      errorMessage = 'Module generation timed out. Please try again.'
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to generate module' },
+      { error: errorMessage },
       { status: 500 }
     )
   }
@@ -259,16 +287,30 @@ Steps to create content for:
 ${outline.map((item: { title: string; description: string }, index: number) => `${index + 1}. ${item.title}`).join('\n')}
 
 Requirements:
-- Write in a clear, engaging style
-- Include practical examples
-- Use markdown formatting for better readability
-- Keep content comprehensive but digestible
-- Include code examples if relevant
+- Write in a clear, engaging style that's easy to understand
+- Structure content with clear headings using markdown (## for main sections, ### for subsections)
+- Include practical examples and real-world applications
+- Add "Example:" sections with concrete examples
+- Include "Tip:" sections with helpful advice and best practices
+- Add "Warning:" sections for common pitfalls or important notes
+- Include "Summary:" sections at the end of each step
+- Use bullet points and numbered lists for better organization
+- Include code examples if relevant with proper formatting:
+  * Use \`\`\`language for code blocks (e.g., \`\`\`javascript, \`\`\`python, \`\`\`html)
+  * Include proper indentation with spaces (2-4 spaces per level)
+  * Add line breaks (\n) for readability
+  * Use descriptive variable names and comments
+  * Show both simple and complex examples
+- Make content comprehensive but digestible
+- Use analogies and metaphors to explain complex concepts
+- Include interactive elements like "Try this:" suggestions
+- Structure from beginner to advanced concepts progressively
+- Ensure all text content wraps properly without horizontal scrolling
 - Return ONLY a JSON array with this exact format:
 [
   {
     "title": "Step Title",
-    "content": "Detailed markdown content for this step"
+    "content": "## Introduction\n\nClear explanation of the concept...\n\n## Key Concepts\n\n- Point 1\n- Point 2\n- Point 3\n\n## Example\n\nHere's a practical example:\n\n\`\`\`javascript\nfunction example() {\n  // This is a well-formatted code example\n  const result = doSomething();\n  return result;\n}\n\`\`\`\n\n## Tip\n\nPro tip for better understanding...\n\n## Summary\n\nKey takeaways from this step..."
   }
 ]
 
@@ -298,7 +340,7 @@ Return ONLY the JSON array, no other text, no markdown formatting.
     // Fallback: generate basic content for each step
     steps = outline.map((item: { title: string; description: string }, index: number) => ({
       title: item.title,
-      content: `## ${item.title}\n\nThis is step ${index + 1} of ${outline.length} in learning ${topic}.\n\n${item.description}\n\n### Key Points\n\n- Understanding the fundamentals\n- Practical applications\n- Best practices\n\n### Examples\n\nHere are some examples to help you understand this concept better.\n\n### Summary\n\nThis step covers the essential aspects of ${item.title.toLowerCase()}.`
+      content: `## Introduction to ${item.title}\n\nWelcome to step ${index + 1} of ${outline.length} in your journey to master ${topic}.\n\n${item.description}\n\n## Key Concepts\n\n- Understanding the fundamentals of ${item.title.toLowerCase()}\n- Practical applications in real-world scenarios\n- Best practices and industry standards\n- Common patterns and techniques\n\n## Example\n\nHere's a practical example to help you understand ${item.title.toLowerCase()} better:\n\n\`\`\`javascript\n// Example code demonstration\nfunction demonstrate${item.title.replace(/\s+/g, '')}() {\n  // This is a basic example\n  const example = "Hello, World!";\n  console.log(example);\n  \n  // More advanced usage\n  const advanced = {\n    concept: "${item.title}",\n    level: "beginner",\n    description: "${item.description}"\n  };\n  \n  return advanced;\n}\n\`\`\`\n\n## Tip\n\nPro tip: Start with the basics and gradually build up your understanding. Practice regularly to reinforce your learning.\n\n## Summary\n\nIn this step, you've learned the essential aspects of ${item.title.toLowerCase()}. Remember to practice and apply these concepts in your own projects.`
     }))
   }
 
