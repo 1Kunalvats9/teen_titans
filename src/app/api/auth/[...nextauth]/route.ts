@@ -35,7 +35,7 @@ export const authOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials: any) {
         if (!credentials?.email || !credentials?.password) return null
         
         const user = await prisma.user.findUnique({ 
@@ -57,7 +57,7 @@ export const authOptions = {
       },
     }),
   ],
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt" as const },
   callbacks: {
     async jwt({ token, user }: { token: JWT & { id?: string; emailVerified?: Date | null; isOnboarded?: boolean; persona?: string | null; onboardingStep?: number }; user?: { id: string; name?: string | null; email?: string | null; image?: string | null; emailVerified?: Date | null; isOnboarded?: boolean; persona?: string | null; onboardingStep?: number } }) {
       if (user) {

@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth/next'
@@ -11,7 +12,6 @@ export async function POST(req: Request) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
     const { file, folder } = await req.json()
     if (!file) {
       return NextResponse.json({ error: 'file (base64 or remote url) required' }, { status: 400 })
