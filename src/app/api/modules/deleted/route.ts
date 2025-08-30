@@ -27,53 +27,54 @@ export async function GET(_request: NextRequest) {
     }
 
     // Get modules that the user has marked as deleted
-    const deletedModuleIds = await prisma.userModule.findMany({
+    const deletedUserModules = await prisma.userModule.findMany({
       where: {
         userId: user.id,
         deleted: true
       },
-      select: {
-        moduleId: true
-      }
-    })
-
-    const deletedModuleIdSet = new Set(deletedModuleIds.map(d => d.moduleId))
-
-    // Fetch all public modules and user's own modules, excluding deleted ones
-    const modules = await prisma.module.findMany({
-      where: {
-        OR: [
-          { isPublic: true },
-          { creatorId: user.id }
-        ],
-        // Exclude modules that the user has marked as deleted
-        id: {
-          notIn: Array.from(deletedModuleIdSet)
-        }
-      },
       include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        _count: {
-          select: {
-            steps: true,
-            quizzes: true
+        module: {
+          include: {
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            },
+            _count: {
+              select: {
+                steps: true,
+                quizzes: true
+              }
+            }
           }
         }
       },
       orderBy: {
-        createdAt: 'desc'
+        module: {
+          createdAt: 'desc'
+        }
       }
     })
 
-    return NextResponse.json(modules)
+    // Transform to match the Module interface
+    const deletedModules = deletedUserModules.map(um => ({
+      id: um.module.id,
+      title: um.module.title,
+      description: um.module.description,
+      isPublic: um.module.isPublic,
+      createdAt: um.module.createdAt,
+      creatorId: um.module.creatorId,
+      creator: um.module.creator,
+      _count: um.module._count,
+      steps: [],
+      quizzes: []
+    }))
+
+    return NextResponse.json(deletedModules)
   } catch (error) {
-    console.error('Error fetching modules:', error)
+    console.error('Error fetching deleted modules:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

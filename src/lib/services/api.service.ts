@@ -192,32 +192,41 @@ export const dashboardAPI = {
   },
 }
 
-// Modules API Functions
-export const modulesAPI = {
-  getAll: async (): Promise<Module[]> => {
-    const response = await api.get(API_ENDPOINTS.MODULES.ALL)
-    return response.data
-  },
+  // Modules API Functions
+  export const modulesAPI = {
+    getAll: async (): Promise<Module[]> => {
+      const response = await api.get(API_ENDPOINTS.MODULES.ALL)
+      return response.data
+    },
 
-  getById: async (id: string): Promise<Module> => {
-    const response = await api.get(API_ENDPOINTS.MODULES.DETAIL(id))
-    return response.data
-  },
+    getById: async (id: string): Promise<Module> => {
+      const response = await api.get(API_ENDPOINTS.MODULES.DETAIL(id))
+      return response.data
+    },
 
-  create: async (data: CreateModuleData): Promise<Module> => {
-    const response = await api.post(API_ENDPOINTS.MODULES.CREATE, data)
-    return response.data
-  },
+    create: async (data: CreateModuleData): Promise<Module> => {
+      const response = await api.post(API_ENDPOINTS.MODULES.CREATE, data)
+      return response.data
+    },
 
-  delete: async (id: string): Promise<void> => {
-    await api.delete(API_ENDPOINTS.MODULES.DELETE(id))
-  },
+    delete: async (id: string): Promise<void> => {
+      await api.delete(API_ENDPOINTS.MODULES.DELETE(id))
+    },
 
-  debug: async () => {
-    const response = await api.get(API_ENDPOINTS.MODULES.DEBUG)
-    return response.data
-  },
-}
+    restore: async (id: string): Promise<void> => {
+      await api.post(`/api/modules/${id}/restore`)
+    },
+
+    getDeleted: async (): Promise<Module[]> => {
+      const response = await api.get('/api/modules/deleted')
+      return response.data
+    },
+
+    debug: async () => {
+      const response = await api.get(API_ENDPOINTS.MODULES.DEBUG)
+      return response.data
+    },
+  }
 
 // User API Functions
 export const userAPI = {

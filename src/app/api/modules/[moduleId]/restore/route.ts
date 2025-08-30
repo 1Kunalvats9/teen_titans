@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
-export async function DELETE(
+export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ moduleId: string }> }
 ) {
@@ -30,23 +30,21 @@ export async function DELETE(
 
     const { moduleId } = await params
 
-    // Check if the module exists and belongs to the user
+    // Check if the module exists
     const moduleData = await prisma.module.findFirst({
       where: {
-        id: moduleId,
-        creatorId: user.id
+        id: moduleId
       }
     })
 
     if (!moduleData) {
       return NextResponse.json(
-        { error: 'Module not found or you do not have permission to delete it' },
+        { error: 'Module not found' },
         { status: 404 }
       )
     }
 
-    // Mark the module as deleted for this specific user
-    // This keeps the module in the database for other users but hides it from the creator
+    // Mark the module as not deleted for this user
     await prisma.userModule.upsert({
       where: {
         userId_moduleId: {
@@ -55,21 +53,21 @@ export async function DELETE(
         }
       },
       update: {
-        deleted: true
+        deleted: false
       },
       create: {
         userId: user.id,
         moduleId: moduleId,
-        deleted: true
+        deleted: false
       }
     })
 
     return NextResponse.json({ 
-      message: 'Module removed from your dashboard',
+      message: 'Module restored to your dashboard',
       moduleId 
     })
   } catch (error) {
-    console.error('Error deleting module:', error)
+    console.error('Error restoring module:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

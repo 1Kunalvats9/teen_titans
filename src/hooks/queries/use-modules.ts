@@ -193,10 +193,76 @@ export const useDeleteModule = () => {
       // Also invalidate dashboard data if it exists
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       
-      toast.success('Module deleted')
+      toast.success('Module removed from your dashboard')
     },
     onSettled: () => {
       // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: moduleKeys.lists() })
+    },
+  })
+}
+
+// Fetch deleted modules (for restoration)
+export const useDeletedModules = () => {
+  return useQuery({
+    queryKey: [...moduleKeys.lists(), 'deleted'],
+    queryFn: async (): Promise<Module[]> => {
+      return await apiService.modules.getDeleted()
+    },
+    staleTime: 30 * 1000, // 30 seconds
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  })
+}
+
+// Restore module mutation
+export const useRestoreModule = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (moduleId: string) => {
+      await apiService.modules.restore(moduleId)
+    },
+    onMutate: async (moduleId) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: [...moduleKeys.lists(), 'deleted'] })
+      await queryClient.cancelQueries({ queryKey: moduleKeys.lists() })
+
+      // Snapshot the previous values
+      const previousDeletedModules = queryClient.getQueryData<Module[]>([...moduleKeys.lists(), 'deleted'])
+      const previousModules = queryClient.getQueryData<Module[]>(moduleKeys.lists())
+
+      // Optimistically remove from deleted and add to regular modules
+      if (previousDeletedModules) {
+        queryClient.setQueryData<Module[]>([...moduleKeys.lists(), 'deleted'], (old) => {
+          return old ? old.filter(module => module.id !== moduleId) : []
+        })
+      }
+
+      // Return a context object with the snapshotted values
+      return { previousDeletedModules, previousModules }
+    },
+    onError: (err: any, moduleId, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousDeletedModules) {
+        queryClient.setQueryData([...moduleKeys.lists(), 'deleted'], context.previousDeletedModules)
+      }
+      
+      console.error('Module restoration error:', err)
+      toast.error('Failed to restore module')
+    },
+    onSuccess: (data, moduleId) => {
+      // Invalidate and refetch both lists
+      queryClient.invalidateQueries({ queryKey: [...moduleKeys.lists(), 'deleted'] })
+      queryClient.invalidateQueries({ queryKey: moduleKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      
+      toast.success('Module restored to your dashboard')
+    },
+    onSettled: () => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: [...moduleKeys.lists(), 'deleted'] })
       queryClient.invalidateQueries({ queryKey: moduleKeys.lists() })
     },
   })

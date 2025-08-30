@@ -13,7 +13,8 @@ import {
   List,
   Sparkles,
   Trash2,
-  MoreVertical
+  MoreVertical,
+  RotateCcw
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,7 @@ import { Input } from '@/components/ui/input'
 import { CreateModuleForm } from '@/components/dashboard/CreateModuleForm'
 import { AnimatePresence } from 'framer-motion'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { useModules, useDeleteModule, useDebugModules } from '@/hooks/queries/use-modules'
+import { useModules, useDeleteModule, useDebugModules, useDeletedModules, useRestoreModule } from '@/hooks/queries/use-modules'
 import { toast } from 'sonner'
 
 interface Module {
@@ -46,6 +47,7 @@ function ModulesPageContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [showDeleted, setShowDeleted] = useState(false)
 
   // Check if we should show create form based on URL parameter
   useEffect(() => {
@@ -62,11 +64,16 @@ function ModulesPageContent() {
   // Delete module mutation using centralized hook
   const deleteModuleMutation = useDeleteModule()
   
+  // Deleted modules functionality
+  const { data: deletedModules = [], isLoading: deletedModulesLoading } = useDeletedModules()
+  const restoreModuleMutation = useRestoreModule()
+  
   // Debug modules using centralized hook
   const debugModulesQuery = useDebugModules()
 
-  // Filter modules based on search query
-  const filteredModules = modules.filter((module: Module) => {
+  // Filter modules based on search query and current view
+  const currentModules = showDeleted ? deletedModules : modules
+  const filteredModules = currentModules.filter((module: Module) => {
     if (!searchQuery.trim()) return true
     
     const query = searchQuery.toLowerCase()
@@ -114,6 +121,13 @@ function ModulesPageContent() {
     e.stopPropagation()
     if (confirm('Are you sure you want to remove this module from your dashboard?')) {
       deleteModuleMutation.mutate(moduleId)
+    }
+  }
+
+  const handleRestoreModule = (e: React.MouseEvent, moduleId: string) => {
+    e.stopPropagation()
+    if (confirm('Are you sure you want to restore this module to your dashboard?')) {
+      restoreModuleMutation.mutate(moduleId)
     }
   }
 
@@ -178,6 +192,29 @@ function ModulesPageContent() {
               </p>
             </motion.div>
 
+            {/* Tabs */}
+            <div className="flex items-center justify-center mb-6">
+              <div className="flex items-center bg-background/50 backdrop-blur-sm rounded-lg border border-border/50 p-1">
+                <Button
+                  variant={!showDeleted ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setShowDeleted(false)}
+                  className="px-4"
+                >
+                  Active Modules
+                </Button>
+                <Button
+                  variant={showDeleted ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setShowDeleted(true)}
+                  className="px-4"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Deleted ({deletedModules.length})
+                </Button>
+              </div>
+            </div>
+
             {/* Search and Controls */}
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="flex-1 max-w-md">
@@ -185,7 +222,7 @@ function ModulesPageContent() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="text"
-                    placeholder="Search modules..."
+                    placeholder={showDeleted ? "Search deleted modules..." : "Search modules..."}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 bg-background/50 backdrop-blur-sm border-border/50 focus:border-primary/50"
@@ -214,31 +251,33 @@ function ModulesPageContent() {
                   </Button>
                 </div>
 
-                {/* Create Module Button */}
-                            <div className="flex gap-2">
-              <Button
-                onClick={() => setShowCreateForm(true)}
-                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-              >
-                <Sparkles className="mr-2 h-4 w-4" />
-                Create Module
-              </Button>
-              <Button
-                onClick={debugModules}
-                variant="outline"
-                size="sm"
-              >
-                Debug
-              </Button>
-            </div>
+                {/* Create Module Button - Only show for active modules */}
+                {!showDeleted && (
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setShowCreateForm(true)}
+                      className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                    >
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Create Module
+                    </Button>
+                    <Button
+                      onClick={debugModules}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Debug
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           {/* Modules Grid/List */}
-          {modulesLoading ? (
+          {(showDeleted ? deletedModulesLoading : modulesLoading) ? (
             <div className="text-center py-12">
-              <LoadingSpinner size="lg" text="Loading modules..." />
+              <LoadingSpinner size="lg" text={`Loading ${showDeleted ? 'deleted' : ''} modules...`} />
             </div>
           ) : filteredModules.length > 0 ? (
             <motion.div
@@ -274,19 +313,35 @@ function ModulesPageContent() {
                             <div className="flex items-center space-x-2">
                               <BookOpen className="h-5 w-5 text-primary flex-shrink-0" />
                               {module.creator?.id === user?.id && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => handleDeleteModule(e, module.id)}
-                                  className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
-                                  disabled={deleteModuleMutation.isPending}
-                                >
-                                  {deleteModuleMutation.isPending && deleteModuleMutation.variables === module.id ? (
-                                    <div className="animate-spin rounded-full h-3 w-3 border-b border-current" />
-                                  ) : (
-                                    <Trash2 className="h-3 w-3" />
-                                  )}
-                                </Button>
+                                showDeleted ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => handleRestoreModule(e, module.id)}
+                                    className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary"
+                                    disabled={restoreModuleMutation.isPending}
+                                  >
+                                    {restoreModuleMutation.isPending && restoreModuleMutation.variables === module.id ? (
+                                      <div className="animate-spin rounded-full h-3 w-3 border-b border-current" />
+                                    ) : (
+                                      <RotateCcw className="h-3 w-3" />
+                                    )}
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => handleDeleteModule(e, module.id)}
+                                    className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                    disabled={deleteModuleMutation.isPending}
+                                  >
+                                    {deleteModuleMutation.isPending && deleteModuleMutation.variables === module.id ? (
+                                      <div className="animate-spin rounded-full h-3 w-3 border-b border-current" />
+                                    ) : (
+                                      <Trash2 className="h-3 w-3" />
+                                    )}
+                                  </Button>
+                                )
                               )}
                             </div>
                           </div>
@@ -376,21 +431,32 @@ function ModulesPageContent() {
             >
               <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">
-                {searchQuery ? 'No modules found' : 'No modules yet'}
+                {showDeleted 
+                  ? (searchQuery ? 'No deleted modules found' : 'No deleted modules')
+                  : (searchQuery ? 'No modules found' : 'No modules yet')
+                }
               </h3>
               <p className="text-muted-foreground mb-6">
-                {searchQuery 
-                  ? 'Try adjusting your search terms or create a new module'
-                  : 'Create your first learning module to get started'
+                {showDeleted
+                  ? (searchQuery 
+                      ? 'Try adjusting your search terms'
+                      : 'Modules you delete will appear here for restoration'
+                    )
+                  : (searchQuery 
+                      ? 'Try adjusting your search terms or create a new module'
+                      : 'Create your first learning module to get started'
+                    )
                 }
               </p>
-              <Button
-                onClick={() => setShowCreateForm(true)}
-                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-              >
-                <Sparkles className="mr-2 h-4 w-4" />
-                Create Your First Module
-              </Button>
+              {!showDeleted && (
+                <Button
+                  onClick={() => setShowCreateForm(true)}
+                  className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Create Your First Module
+                </Button>
+              )}
             </motion.div>
           )}
         </div>

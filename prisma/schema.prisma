@@ -246,6 +246,7 @@ model UserModule {
   id        String  @id @default(cuid())
   progress  Float   @default(0) // Percentage completed e.g., 75.0
   completed Boolean @default(false)
+  deleted   Boolean @default(false) // Track if user has "deleted" this module for themselves
 
   // Relations
   userId   String
