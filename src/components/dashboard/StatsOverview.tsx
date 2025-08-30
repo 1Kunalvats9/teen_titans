@@ -77,7 +77,11 @@ export function StatsOverview() {
       case 'completedModules':
         return dashboardStats.completedModules || 0
       case 'totalStudyTime':
-        return `${Math.round((dashboardStats.totalStudyTime || 0) / 60)}h` // Convert to hours
+        const minutes = dashboardStats.totalStudyTime || 0
+        if (minutes < 60) return `${minutes}m`
+        const hours = Math.floor(minutes / 60)
+        const remainingMinutes = minutes % 60
+        return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
       case 'averageScore':
         return `${dashboardStats.averageScore || 0}%`
       case 'totalQuizzes':

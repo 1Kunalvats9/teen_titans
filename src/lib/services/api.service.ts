@@ -83,10 +83,10 @@ export interface AIConversation {
 
 export interface TodaysGoal {
   id: string
-  title: string
-  description: string
-  isCompleted: boolean
-  xpReward: number
+  task: string
+  completed: boolean
+  createdAt: string
+  date: string
 }
 
 export interface UserStatus {
@@ -171,6 +171,20 @@ export const dashboardAPI = {
   getTodaysGoals: async (): Promise<TodaysGoal[]> => {
     const response = await api.get(API_ENDPOINTS.DASHBOARD.TODAYS_GOALS)
     return response.data.data
+  },
+
+  createGoal: async (task: string): Promise<TodaysGoal> => {
+    const response = await api.post(API_ENDPOINTS.DASHBOARD.TODAYS_GOALS, { task })
+    return response.data.data
+  },
+
+  updateGoal: async (id: string, data: { completed?: boolean; task?: string }): Promise<TodaysGoal> => {
+    const response = await api.put(API_ENDPOINTS.DASHBOARD.TODAYS_GOALS, { id, ...data })
+    return response.data.data
+  },
+
+  deleteGoal: async (id: string): Promise<void> => {
+    await api.delete(`${API_ENDPOINTS.DASHBOARD.TODAYS_GOALS}?id=${id}`)
   },
 
   getAllData: async () => {

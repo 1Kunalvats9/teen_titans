@@ -5,9 +5,11 @@ import { BookOpen, Clock, Target, Play, CheckCircle } from 'lucide-react'
 import { PremiumCard } from '@/components/ui/premium-card'
 import { Button } from '@/components/ui/button'
 import { useLearningModules } from '@/hooks/queries/use-dashboard'
+import { useRouter } from 'next/navigation'
 
 export function LearningProgress() {
   const { data: modules, isLoading, error } = useLearningModules()
+  const router = useRouter()
 
   const getDifficultyColor = (difficulty: string | undefined) => {
     switch (difficulty) {
@@ -126,11 +128,12 @@ export function LearningProgress() {
                     size="sm" 
                     variant={module.isCompleted ? "outline" : "default"}
                     className="cursor-pointer"
+                    onClick={() => router.push(`/modules/${module.id}`)}
                   >
                     {module.isCompleted ? (
                       <>
                         <CheckCircle className="w-4 h-4 mr-2" />
-                        Completed
+                        Review
                       </>
                     ) : (
                       <>
@@ -152,7 +155,10 @@ export function LearningProgress() {
             <p className="text-muted-foreground mb-4">
               Start your learning journey by exploring available modules
             </p>
-            <Button className="cursor-pointer">
+            <Button 
+              className="cursor-pointer"
+              onClick={() => router.push('/modules')}
+            >
               <BookOpen className="w-4 h-4 mr-2" />
               Browse Modules
             </Button>
@@ -161,7 +167,11 @@ export function LearningProgress() {
         
         {modules && modules.length > 3 && (
           <div className="text-center pt-4">
-            <Button variant="outline" className="w-full cursor-pointer">
+            <Button 
+              variant="outline" 
+              className="w-full cursor-pointer"
+              onClick={() => router.push('/modules')}
+            >
               View All Modules ({modules.length})
             </Button>
           </div>

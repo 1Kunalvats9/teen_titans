@@ -9,6 +9,7 @@ import { QuickActions } from '@/components/dashboard/QuickActions'
 import { RecentActivity } from '@/components/dashboard/RecentActivity'
 import { LearningProgress } from '@/components/dashboard/LearningProgress'
 import { AITutorCard } from '@/components/dashboard/AITutorCard'
+import { TodaysGoals } from '@/components/dashboard/TodaysGoals'
 import { useAllDashboardData } from '@/hooks/queries/use-dashboard'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
@@ -88,6 +89,7 @@ const DashboardContent = memo(function DashboardContent() {
             
             {/* Right Column - Sidebar */}
             <div className="space-y-8">
+              <TodaysGoals />
               <AITutorCard user={user} />
             </div>
           </div>

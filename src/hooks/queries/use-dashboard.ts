@@ -1,15 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiService } from '@/lib/services/api.service'
+import { toast } from 'sonner'
 
-// Query keys
+// Query Keys
 export const dashboardKeys = {
   all: ['dashboard'] as const,
   stats: () => [...dashboardKeys.all, 'stats'] as const,
   modules: () => [...dashboardKeys.all, 'modules'] as const,
-  activity: () => [...dashboardKeys.all, 'activity'] as const,
-  conversations: () => [...dashboardKeys.all, 'conversations'] as const,
-  goals: () => [...dashboardKeys.all, 'goals'] as const,
-  allData: () => [...dashboardKeys.all, 'allData'] as const,
+  recentActivity: () => [...dashboardKeys.all, 'recent-activity'] as const,
+  aiConversations: () => [...dashboardKeys.all, 'ai-conversations'] as const,
+  todaysGoals: () => [...dashboardKeys.all, 'todays-goals'] as const,
 }
 
 // Dashboard Stats Query
@@ -43,7 +43,7 @@ export const useLearningModules = () => {
 // Recent Activity Query
 export const useRecentActivity = () => {
   return useQuery({
-    queryKey: dashboardKeys.activity(),
+    queryKey: dashboardKeys.recentActivity(),
     queryFn: async () => {
       return await apiService.dashboard.getRecentActivity()
     },
@@ -57,7 +57,7 @@ export const useRecentActivity = () => {
 // AI Conversations Query
 export const useAIConversations = () => {
   return useQuery({
-    queryKey: dashboardKeys.conversations(),
+    queryKey: dashboardKeys.aiConversations(),
     queryFn: async () => {
       return await apiService.dashboard.getAIConversations()
     },
@@ -71,21 +71,77 @@ export const useAIConversations = () => {
 // Today's Goals Query
 export const useTodaysGoals = () => {
   return useQuery({
-    queryKey: dashboardKeys.goals(),
+    queryKey: dashboardKeys.todaysGoals(),
     queryFn: async () => {
       return await apiService.dashboard.getTodaysGoals()
     },
     staleTime: 1 * 60 * 1000, // 1 minute
-    gcTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  })
+}
+
+// Create Goal Mutation
+export const useCreateGoal = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (task: string) => {
+      return await apiService.dashboard.createGoal(task)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.todaysGoals() })
+      toast.success('Goal added successfully')
+    },
+    onError: (error: any) => {
+      console.error('Create goal error:', error)
+      toast.error('Failed to add goal')
+    },
+  })
+}
+
+// Update Goal Mutation
+export const useUpdateGoal = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: { completed?: boolean; task?: string } }) => {
+      return await apiService.dashboard.updateGoal(id, data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.todaysGoals() })
+    },
+    onError: (error: any) => {
+      console.error('Update goal error:', error)
+      toast.error('Failed to update goal')
+    },
+  })
+}
+
+// Delete Goal Mutation
+export const useDeleteGoal = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiService.dashboard.deleteGoal(id)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.todaysGoals() })
+      toast.success('Goal deleted successfully')
+    },
+    onError: (error: any) => {
+      console.error('Delete goal error:', error)
+      toast.error('Failed to delete goal')
+    },
   })
 }
 
 // All Dashboard Data Query
 export const useAllDashboardData = () => {
   return useQuery({
-    queryKey: dashboardKeys.allData(),
+    queryKey: dashboardKeys.all,
     queryFn: async () => {
       return await apiService.dashboard.getAllData()
     },
@@ -108,10 +164,10 @@ export const useRefreshDashboardData = () => {
       // Update all individual queries with the new data
       queryClient.setQueryData(dashboardKeys.stats(), data.stats)
       queryClient.setQueryData(dashboardKeys.modules(), data.modules)
-      queryClient.setQueryData(dashboardKeys.activity(), data.activity)
-      queryClient.setQueryData(dashboardKeys.conversations(), data.conversations)
-      queryClient.setQueryData(dashboardKeys.goals(), data.goals)
-      queryClient.setQueryData(dashboardKeys.allData(), data)
+      queryClient.setQueryData(dashboardKeys.recentActivity(), data.activity)
+      queryClient.setQueryData(dashboardKeys.aiConversations(), data.conversations)
+      queryClient.setQueryData(dashboardKeys.todaysGoals(), data.goals)
+      queryClient.setQueryData(dashboardKeys.all, data)
     },
     onError: (error) => {
       console.error('Failed to refresh dashboard data:', error)

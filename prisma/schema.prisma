@@ -68,6 +68,8 @@ model User {
   aiConversations     AiConversation[]
   chatRoomMemberships ChatRoomMember[]
   sentChatMessages    ChatMessage[]
+  studySessions       StudySession[]
+  todaysGoals         TodaysGoal[]
 
   // NextAuth Required Relations
   accounts Account[]
@@ -137,6 +139,7 @@ model Module {
   projects        Project[]
   chatRoom        ChatRoom?
   aiConversations AiConversation[]
+  studySessions   StudySession[]
 }
 
 model Step {
@@ -358,4 +361,35 @@ model ChatMessage {
   room     ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@index([roomId, createdAt])
+}
+
+// ========== STUDY TRACKING & GOALS ==========
+
+model StudySession {
+  id        String   @id @default(cuid())
+  startTime DateTime @default(now())
+  endTime   DateTime?
+  duration  Int?     // Duration in minutes
+  moduleId  String?  // Optional - if studying a specific module
+  
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module Module? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+
+  @@index([userId, startTime])
+}
+
+model TodaysGoal {
+  id        String   @id @default(cuid())
+  task      String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  date      DateTime @default(now()) // The date this goal is for
+  
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
 }
