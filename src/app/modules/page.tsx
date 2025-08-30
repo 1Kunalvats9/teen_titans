@@ -24,6 +24,7 @@ import { AnimatePresence } from 'framer-motion'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useModules, useDeleteModule, useDebugModules, useDeletedModules, useRestoreModule } from '@/hooks/queries/use-modules'
 import { toast } from 'sonner'
+import { ConfirmationModal, useConfirmationModal } from '@/components/ui/confirmation-modal'
 
 interface Module {
   id: string
@@ -48,6 +49,9 @@ function ModulesPageContent() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [showDeleted, setShowDeleted] = useState(false)
+
+  // Confirmation modal
+  const { modalState, openModal, closeModal } = useConfirmationModal()
 
   // Check if we should show create form based on URL parameter
   useEffect(() => {
@@ -119,16 +123,32 @@ function ModulesPageContent() {
 
   const handleDeleteModule = (e: React.MouseEvent, moduleId: string) => {
     e.stopPropagation()
-    if (confirm('Are you sure you want to remove this module from your dashboard?')) {
-      deleteModuleMutation.mutate(moduleId)
-    }
+    openModal({
+      title: 'Remove Module',
+      message: 'Are you sure you want to remove this module from your dashboard? You can restore it later from the Deleted tab.',
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+      onConfirm: () => {
+        deleteModuleMutation.mutate(moduleId)
+        closeModal()
+      }
+    })
   }
 
   const handleRestoreModule = (e: React.MouseEvent, moduleId: string) => {
     e.stopPropagation()
-    if (confirm('Are you sure you want to restore this module to your dashboard?')) {
-      restoreModuleMutation.mutate(moduleId)
-    }
+    openModal({
+      title: 'Restore Module',
+      message: 'Are you sure you want to restore this module to your dashboard?',
+      confirmText: 'Restore',
+      cancelText: 'Cancel',
+      variant: 'default',
+      onConfirm: () => {
+        restoreModuleMutation.mutate(moduleId)
+        closeModal()
+      }
+    })
   }
 
   if (isLoading) {
@@ -468,6 +488,19 @@ function ModulesPageContent() {
           <CreateModuleForm onClose={() => setShowCreateForm(false)} />
         )}
       </AnimatePresence>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+        variant={modalState.variant}
+        isLoading={deleteModuleMutation.isPending || restoreModuleMutation.isPending}
+      />
     </div>
   )
 }
