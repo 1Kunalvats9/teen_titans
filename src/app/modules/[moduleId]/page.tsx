@@ -97,7 +97,7 @@ export default function ModulePage() {
   }
 
   const handleNextStep = () => {
-    if (module && currentStep < module.steps.length - 1) {
+    if (module && module.steps && currentStep < module.steps.length - 1) {
       setIsNavigating(true)
       setCurrentStep(currentStep + 1)
       // Simulate loading time for better UX
@@ -136,6 +136,22 @@ export default function ModulePage() {
 
   // Don't render anything if user is not authenticated (middleware will handle redirect)
   if (!user || !module) return null
+
+  // Don't render if module doesn't have steps
+  if (!module.steps || module.steps.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-destructive text-lg font-semibold">Module has no content</div>
+          <div className="text-muted-foreground">This module doesn't have any steps yet.</div>
+          <Button onClick={() => router.push('/modules')}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Modules
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   const currentStepData = module.steps[currentStep]
   const progress = ((currentStep + 1) / module.steps.length) * 100
@@ -219,7 +235,7 @@ export default function ModulePage() {
                 </div>
                 <div className="flex items-center space-x-1">
                   <Target className="h-4 w-4" />
-                  <span>{module.quizzes.length} quiz</span>
+                  <span>{module.quizzes?.length || 0} quiz</span>
                 </div>
               </div>
 
@@ -276,7 +292,7 @@ export default function ModulePage() {
                             {step.title}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            Step {index + 1} of {module.steps.length}
+                            Step {index + 1} of {module.steps?.length || 0}
                           </div>
                         </div>
                       </motion.button>
@@ -284,7 +300,7 @@ export default function ModulePage() {
                   </div>
 
                   {/* Quiz Button */}
-                  {module.quizzes.length > 0 && (
+                  {module.quizzes && module.quizzes.length > 0 && (
                     <div className="mt-6 pt-6 border-t border-border/50">
                       <Button
                         onClick={handleStartQuiz}

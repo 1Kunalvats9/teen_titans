@@ -4,14 +4,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BrainCircuit, Menu, User, LogOut, LayoutDashboard } from 'lucide-react';
-import { signOut } from 'next-auth/react';
-import { useStableSession } from '@/hooks/use-stable-session';
+import { useAuth } from '@/hooks/auth';
 import ThemeToggleButton from '@/components/ui/theme-toggle-button';
 import Link from 'next/link';
 
 export const Navbar = () => {
   const navLinks = ['Features', 'Pricing', 'Community'];
-  const { data: session } = useStableSession();
+  const { user, logout, isLoading } = useAuth();
 
   return (
     <motion.nav
@@ -39,7 +38,7 @@ export const Navbar = () => {
         {/* Action Buttons */}
         <div className="hidden md:flex items-center gap-4">
           <ThemeToggleButton />
-          {session?.user ? (
+          {!isLoading && user ? (
             <div className="flex items-center gap-3">
               <Link href="/dashboard">
                 <motion.button 
@@ -56,19 +55,19 @@ export const Navbar = () => {
                   <User className="w-4 h-4 text-primary" />
                 </div>
                 <span className="text-sm font-medium text-foreground">
-                  {session.user.name || session.user.email?.split('@')[0]}
+                  {user.name || user.email?.split('@')[0]}
                 </span>
               </div>
               <motion.button 
                 whileHover={{ scale: 1.05 }} 
                 className="p-2 text-muted-foreground hover:text-foreground transition-colors" 
-                onClick={() => signOut()}
+                onClick={() => logout()}
                 title="Logout"
               >
                 <LogOut className="w-4 h-4" />
               </motion.button>
             </div>
-          ) : (
+          ) : !isLoading ? (
             <>
               <Link href="/login">
                 <motion.button whileHover={{ scale: 1.05 }} className="px-4 py-2 text-primary font-semibold">
@@ -84,7 +83,7 @@ export const Navbar = () => {
                 </motion.button>
               </Link>
             </>
-          )}
+          ) : null}
         </div>
         
         {/* Mobile Menu Button */}

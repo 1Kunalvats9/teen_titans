@@ -8,6 +8,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from "sonner";
+import { UniversalLoader } from "@/components/ui/universal-loader";
 
 export default function RootLayout({
   children,
@@ -34,12 +35,14 @@ export default function RootLayout({
           <QueryProvider>
             <AuthProvider>
               <AppAuthProvider>
-                <OnboardingProvider>
-                  <Navbar />
-                  {children}
-                  <Toaster />
-                  <Footer />
-                </OnboardingProvider>
+                <UniversalLoader>
+                  <OnboardingProvider>
+                    <Navbar />
+                    {children}
+                    <Toaster />
+                    <Footer />
+                  </OnboardingProvider>
+                </UniversalLoader>
               </AppAuthProvider>
             </AuthProvider>
           </QueryProvider>

@@ -93,7 +93,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
         // Upload profile image using the service
         const result = await uploadProfileImage.mutateAsync(selectedFile)
         if (result.success) {
-          uploadedUrl = result.imageUrl
+          uploadedUrl = result.data.imageUrl
         } else {
           setError('Failed to upload profile image')
           return

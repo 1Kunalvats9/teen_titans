@@ -45,15 +45,14 @@ export async function DELETE(
       )
     }
 
-    // Instead of deleting, we'll mark it as not public (soft delete)
-    // This keeps it in the database but removes it from user's dashboard
-    const updatedModule = await prisma.module.update({
-      where: { id: moduleId },
-      data: { isPublic: false }
+    // Delete the module and all its related data completely
+    // This will cascade delete steps, quizzes, questions, and options
+    await prisma.module.delete({
+      where: { id: moduleId }
     })
 
     return NextResponse.json({ 
-      message: 'Module removed from your dashboard',
+      message: 'Module deleted successfully',
       moduleId 
     })
   } catch (error) {

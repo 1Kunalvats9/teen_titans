@@ -8,6 +8,10 @@ const { getToken } = require('next-auth/jwt') as {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
+  // Public pages that don't require authentication
+  const publicPages = ['/', '/login', '/signup', '/verify-request']
+  const isPublicPage = publicPages.includes(pathname)
+
   // Guard dashboard and modules routes
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/modules')) {
     try {
@@ -17,7 +21,6 @@ export async function middleware(req: NextRequest) {
       })
 
       // Only redirect if there's definitely no token
-      // If there's an error or token is undefined, let client-side handle it
       if (token === null) {
         const url = new URL('/login', req.url)
         return NextResponse.redirect(url)
@@ -29,11 +32,28 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Redirect authenticated users away from auth pages
+  if (isPublicPage && pathname !== '/') {
+    try {
+      const token = await getToken({ 
+        req, 
+        secret: process.env.NEXTAUTH_SECRET 
+      })
+
+      if (token) {
+        const url = new URL('/dashboard', req.url)
+        return NextResponse.redirect(url)
+      }
+    } catch (error) {
+      console.error('Middleware auth redirect error:', error)
+    }
+  }
+
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/modules/:path*'],
+  matcher: ['/dashboard/:path*', '/modules/:path*', '/login', '/signup'],
 }
 
 

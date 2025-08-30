@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/lib/api'
+import { apiService } from '@/lib/services/api.service'
 import { toast } from 'sonner'
 
 // Query keys for modules
@@ -26,6 +26,26 @@ export interface Module {
     steps: number
     quizzes: number
   }
+  steps?: Array<{
+    id: string
+    title: string
+    content: string
+    order: number
+  }>
+  quizzes?: Array<{
+    id: string
+    title: string
+    questions: Array<{
+      id: string
+      text: string
+      explanation: string | null
+      options: Array<{
+        id: string
+        text: string
+        isCorrect: boolean
+      }>
+    }>
+  }>
 }
 
 export interface CreateModuleData {
@@ -38,8 +58,7 @@ export const useModules = () => {
   return useQuery({
     queryKey: moduleKeys.lists(),
     queryFn: async (): Promise<Module[]> => {
-      const response = await api.get('/api/modules')
-      return response.data
+      return await apiService.modules.getAll()
     },
     staleTime: 30 * 1000, // 30 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
@@ -53,8 +72,7 @@ export const useModule = (moduleId: string) => {
   return useQuery({
     queryKey: moduleKeys.detail(moduleId),
     queryFn: async () => {
-      const response = await api.get(`/api/modules/${moduleId}`)
-      return response.data
+      return await apiService.modules.getById(moduleId)
     },
     enabled: !!moduleId,
     staleTime: 30 * 1000, // 30 seconds
@@ -70,8 +88,7 @@ export const useCreateModule = () => {
 
   return useMutation({
     mutationFn: async (data: CreateModuleData) => {
-      const response = await api.post('/api/modules/generate', data)
-      return response.data
+      return await apiService.modules.create(data)
     },
     onMutate: async (newModule) => {
       // Cancel any outgoing refetches
@@ -138,8 +155,7 @@ export const useDeleteModule = () => {
 
   return useMutation({
     mutationFn: async (moduleId: string) => {
-      const response = await api.delete(`/api/modules/${moduleId}/delete`)
-      return response.data
+      await apiService.modules.delete(moduleId)
     },
     onMutate: async (moduleId) => {
       // Cancel any outgoing refetches
@@ -177,7 +193,7 @@ export const useDeleteModule = () => {
       // Also invalidate dashboard data if it exists
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       
-      toast.success('Module removed from your dashboard')
+      toast.success('Module deleted')
     },
     onSettled: () => {
       // Always refetch after error or success
@@ -191,8 +207,7 @@ export const useDebugModules = () => {
   return useQuery({
     queryKey: [...moduleKeys.all, 'debug'],
     queryFn: async () => {
-      const response = await api.get('/api/modules/debug')
-      return response.data
+      return await apiService.modules.debug()
     },
     enabled: false, // Only run when explicitly called
     retry: false,

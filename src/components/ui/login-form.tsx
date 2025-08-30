@@ -2,12 +2,12 @@
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { signIn } from "next-auth/react"
 import { useAuth } from "@/hooks/auth"
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
+import { Loader2 } from "lucide-react"
 
 export function LoginForm({
   className,
@@ -32,8 +32,19 @@ export function LoginForm({
     setLoading(true)
     try {
       const res = await login(email, password)
-      if (!res.success) setError(res.message || 'Invalid email or password')
-      else router.push('/')
+      if (!res.success) {
+        setError(res.message || 'Invalid email or password')
+      }
+      // Don't redirect here - let the auth context handle it
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    setLoading(true)
+    try {
+      await loginGoogle()
     } finally {
       setLoading(false)
     }
@@ -56,6 +67,7 @@ export function LoginForm({
               type="email"
               placeholder="m@example.com"
               required
+              disabled={loading}
             />
           </div>
           <div className="grid gap-3">
@@ -68,14 +80,40 @@ export function LoginForm({
                 Forgot your password?
               </a>
             </div>
-            <Input id="password" name="password" type="password" required />
+            <Input 
+              id="password" 
+              name="password" 
+              type="password" 
+              required 
+              disabled={loading}
+            />
           </div>
           <div className="flex flex-col gap-3">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
+            <Button type="submit" className="w-full" disabled={loading || isLoading}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                'Login'
+              )}
             </Button>
-            <Button variant="outline" className="w-full" type="button" onClick={() => loginGoogle()}>
-              Login with Google
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              type="button" 
+              onClick={handleGoogleLogin}
+              disabled={loading || isLoading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                'Login with Google'
+              )}
             </Button>
           </div>
         </div>

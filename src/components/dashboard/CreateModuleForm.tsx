@@ -65,7 +65,7 @@ export function CreateModuleForm({ onClose }: CreateModuleFormProps) {
           clearInterval(progressInterval)
           setIsGenerating(false)
           setGenerationStep('')
-          router.push(`/modules/${data.moduleId}`)
+          router.push(`/modules/${data.id}`)
           onClose()
         },
         onError: () => {

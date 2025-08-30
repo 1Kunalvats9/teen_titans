@@ -1,62 +1,52 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { authService } from '@/lib/services/auth.service'
-import { handleApiError } from '@/lib/api'
+import { apiService } from '@/lib/services/api.service'
+import { toast } from 'sonner'
 
-// Query keys
-export const authKeys = {
-  all: ['auth'] as const,
-  user: () => [...authKeys.all, 'user'] as const,
-  onboarding: () => [...authKeys.all, 'onboarding'] as const,
-}
-
-// Signup Mutation
-export const useSignup = () => {
-  return useMutation({
-    mutationFn: authService.signup,
-    onError: (error) => {
-      console.error('Signup failed:', handleApiError(error))
-    },
-  })
-}
-
-// Verify Email Mutation
-export const useVerifyEmail = () => {
-  return useMutation({
-    mutationFn: authService.verifyEmail,
-    onError: (error) => {
-      console.error('Email verification failed:', handleApiError(error))
-    },
-  })
-}
-
-// Complete Onboarding Mutation
+// Complete onboarding mutation
 export const useCompleteOnboarding = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: authService.completeOnboarding,
-    onSuccess: () => {
-      // Invalidate user data to refresh session
-      queryClient.invalidateQueries({ queryKey: authKeys.user() })
+    mutationFn: async (data: { persona?: string; imageUrl?: string }) => {
+      const result = await apiService.auth.completeOnboarding(data)
+      if (!result.success) {
+        throw new Error(result.error)
+      }
+      return result
     },
-    onError: (error) => {
-      console.error('Onboarding completion failed:', handleApiError(error))
+    onSuccess: () => {
+      // Invalidate user-related queries
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      toast.success('Onboarding completed successfully!')
+    },
+    onError: (error: Error) => {
+      console.error('Complete onboarding error:', error)
+      toast.error(error.message || 'Failed to complete onboarding')
     },
   })
 }
 
-// Upload Profile Image Mutation
+// Upload profile image mutation
 export const useUploadProfileImage = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: authService.uploadProfileImage,
-    onSuccess: () => {
-      // Invalidate user data to refresh session
-      queryClient.invalidateQueries({ queryKey: authKeys.user() })
+    mutationFn: async (file: File) => {
+      const result = await apiService.auth.uploadProfileImage(file)
+      if (!result.success) {
+        throw new Error(result.error)
+      }
+      return result
     },
-    onError: (error) => {
-      console.error('Profile image upload failed:', handleApiError(error))
+    onSuccess: () => {
+      // Invalidate user-related queries
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      toast.success('Profile image updated successfully!')
+    },
+    onError: (error: Error) => {
+      console.error('Upload profile image error:', error)
+      toast.error(error.message || 'Failed to upload profile image')
     },
   })
 }
