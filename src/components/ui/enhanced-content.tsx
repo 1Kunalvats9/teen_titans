@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import type { ReactElement } from 'react'
 import { motion } from 'framer-motion'
 import { 
@@ -17,13 +17,25 @@ import {
   TrendingUp,
   Users,
   Clock,
-  Award
+  Award,
+  Copy,
+  Check
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-// import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Badge } from './badge'
+import Prism from 'prismjs'
+import 'prismjs/components/prism-javascript'
+import 'prismjs/components/prism-typescript'
+import 'prismjs/components/prism-jsx'
+import 'prismjs/components/prism-tsx'
+import 'prismjs/components/prism-python'
+import 'prismjs/components/prism-java'
+import 'prismjs/components/prism-css'
+import 'prismjs/components/prism-json'
+import 'prismjs/components/prism-bash'
+import 'prismjs/components/prism-sql'
 
 interface EnhancedContentProps {
   content: string
@@ -36,19 +48,140 @@ interface ContentBlock {
   content: string
   level?: number
   items?: string[]
+  language?: string
+  codeContent?: string
 }
 
 export function EnhancedContent({ content, stepNumber, totalSteps }: EnhancedContentProps) {
   const [expandedExamples, setExpandedExamples] = React.useState<Set<number>>(new Set())
+  const [copiedCode, setCopiedCode] = React.useState<Set<number>>(new Set())
+  const codeRefs = useRef<{ [key: number]: HTMLPreElement | null }>({})
+
+  // Highlight code blocks when component mounts or content changes
+  useEffect(() => {
+    // Highlight all code blocks
+    Object.values(codeRefs.current).forEach((ref) => {
+      if (ref) {
+        Prism.highlightElement(ref)
+      }
+    })
+  }, [content])
+
+  const handleCopyCode = async (codeContent: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(codeContent)
+      setCopiedCode(prev => new Set(prev).add(index))
+      setTimeout(() => {
+        setCopiedCode(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(index)
+          return newSet
+        })
+      }, 2000)
+    } catch (error) {
+      console.error('Failed to copy code:', error)
+    }
+  }
+
+  // Helper function to detect and format plain text code
+  const detectAndFormatCode = (text: string): string => {
+    // Common code patterns to detect
+    const codePatterns = [
+      /function\s+\w+\s*\(/,
+      /const\s+\w+\s*=/,
+      /let\s+\w+\s*=/,
+      /var\s+\w+\s*=/,
+      /if\s*\(/,
+      /for\s*\(/,
+      /while\s*\(/,
+      /class\s+\w+/,
+      /import\s+/,
+      /export\s+/,
+      /return\s+/,
+      /console\.log/,
+      /def\s+\w+/,
+      /print\s*\(/,
+      /\.css\s*{/,
+      /\.js\s*{/,
+      /\.ts\s*{/,
+      /\.py\s*{/
+    ]
+    
+    const lines = text.split('\n')
+    const hasCodePattern = lines.some(line => 
+      codePatterns.some(pattern => pattern.test(line.trim()))
+    )
+    
+    if (hasCodePattern && lines.length > 2) {
+      // Determine language based on content
+      let language = 'text'
+      if (text.includes('function') || text.includes('const') || text.includes('console.log')) language = 'javascript'
+      else if (text.includes('def ') || text.includes('print(')) language = 'python'
+      else if (text.includes('.css') || text.includes('{')) language = 'css'
+      else if (text.includes('interface') || text.includes(': string')) language = 'typescript'
+      
+      return `\`\`\`${language}\n${text}\n\`\`\``
+    }
+    
+    return text
+  }
 
   // Parse markdown content into structured blocks
   const parseContent = (content: string): ContentBlock[] => {
-    const lines = content.split('\n')
+    // First, detect and format any plain text code
+    const formattedContent = detectAndFormatCode(content)
+    const lines = formattedContent.split('\n')
     const blocks: ContentBlock[] = []
     let currentBlock: ContentBlock | null = null
+    let inCodeBlock = false
+    let codeBlockLanguage = ''
+    let codeBlockContent: string[] = []
 
-    for (const line of lines) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
       const trimmedLine = line.trim()
+      
+      // Handle code block start
+      if (line.startsWith('```') && !inCodeBlock) {
+        if (currentBlock) blocks.push(currentBlock)
+        
+        // Extract language from the opening ```
+        const languageMatch = line.match(/^```(\w+)?/)
+        codeBlockLanguage = languageMatch?.[1] || 'text'
+        
+        inCodeBlock = true
+        codeBlockContent = []
+        currentBlock = null
+        continue
+      }
+      
+      // Handle code block end
+      if (line.startsWith('```') && inCodeBlock) {
+        inCodeBlock = false
+        // Join with newlines to preserve line breaks and indentation
+        // Also normalize tabs to spaces for consistent display
+        const codeContent = codeBlockContent
+          .join('\n')
+          .replace(/\t/g, '  ') // Replace tabs with 2 spaces
+        
+        blocks.push({
+          type: 'code',
+          content: `\`\`\`${codeBlockLanguage}\n${codeContent}\n\`\`\``,
+          language: codeBlockLanguage,
+          codeContent: codeContent
+        })
+        
+        codeBlockContent = []
+        codeBlockLanguage = ''
+        continue
+      }
+      
+      // Collect code block content - preserve original line structure
+      if (inCodeBlock) {
+        // Don't trim the line - preserve original indentation and spacing
+        codeBlockContent.push(line)
+        continue
+      }
       
       if (!trimmedLine) {
         if (currentBlock) {
@@ -66,16 +199,6 @@ export function EnhancedContent({ content, stepNumber, totalSteps }: EnhancedCon
           type: 'heading',
           content: trimmedLine.replace(/^#+\s*/, ''),
           level
-        }
-        continue
-      }
-
-      // Detect code blocks
-      if (trimmedLine.startsWith('```')) {
-        if (currentBlock) blocks.push(currentBlock)
-        currentBlock = {
-          type: 'code',
-          content: trimmedLine
         }
         continue
       }
@@ -153,6 +276,17 @@ export function EnhancedContent({ content, stepNumber, totalSteps }: EnhancedCon
           content: trimmedLine
         }
       }
+    }
+
+    // Handle any remaining code block
+    if (inCodeBlock && codeBlockContent.length > 0) {
+      const codeContent = codeBlockContent.join('\n')
+      blocks.push({
+        type: 'code',
+        content: `\`\`\`${codeBlockLanguage}\n${codeContent}\n\`\`\``,
+        language: codeBlockLanguage,
+        codeContent: codeContent
+      })
     }
 
     if (currentBlock) {
@@ -241,9 +375,10 @@ export function EnhancedContent({ content, stepNumber, totalSteps }: EnhancedCon
           )
         }
         
-        // Handle multi-line code blocks
-        const codeContent = block.content.replace(/^```\w*\n?/, '').replace(/\n?```$/, '')
-        const language = block.content.match(/^```(\w+)/)?.[1] || 'text'
+        // Handle multi-line code blocks with syntax highlighting
+        const codeContent = block.codeContent || block.content.replace(/^```\w*\n?/, '').replace(/\n?```$/, '')
+        const language = block.language || block.content.match(/^```(\w+)/)?.[1] || 'text'
+        const isCopied = copiedCode.has(index)
         
         return (
           <motion.div
@@ -259,15 +394,44 @@ export function EnhancedContent({ content, stepNumber, totalSteps }: EnhancedCon
                     <Code className="h-4 w-4 text-primary" />
                     <span className="text-sm font-medium text-foreground">Code Example</span>
                   </div>
-                  <div className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-1 rounded">
-                    {language}
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-1 rounded">
+                      {language}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCopyCode(codeContent, index)}
+                      className="h-8 w-8 p-0 hover:bg-muted/50"
+                    >
+                      {isCopied ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Copy className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="bg-gray-900 dark:bg-gray-950 rounded-b-lg overflow-hidden">
-                  <pre className="text-sm text-gray-100 p-4 overflow-x-auto whitespace-pre-wrap break-words">
-                    <code className="font-mono">{codeContent}</code>
+                  <pre 
+                    ref={(el) => {
+                      codeRefs.current[index] = el
+                    }}
+                    className="text-sm p-4 overflow-x-auto"
+                    style={{ 
+                      background: 'transparent',
+                      margin: 0,
+                      fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                      whiteSpace: 'pre',
+                      wordBreak: 'normal',
+                      overflowWrap: 'normal'
+                    }}
+                  >
+                    <code className={`language-${language}`}>
+                      {codeContent}
+                    </code>
                   </pre>
                 </div>
               </CardContent>
