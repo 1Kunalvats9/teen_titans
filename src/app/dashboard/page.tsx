@@ -8,10 +8,11 @@ import { StatsOverview } from '@/components/dashboard/StatsOverview'
 import { QuickActions } from '@/components/dashboard/QuickActions'
 import { RecentActivity } from '@/components/dashboard/RecentActivity'
 import { LearningProgress } from '@/components/dashboard/LearningProgress'
-import { AITutorCard } from '@/components/dashboard/AITutorCard'
 import { TodaysGoals } from '@/components/dashboard/TodaysGoals'
+import { AiConversations } from '@/components/dashboard/AiConversations'
 import { useAllDashboardData } from '@/hooks/queries/use-dashboard'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { FloatingChatbotButton } from '@/components/chatbot/FloatingChatbotButton'
 
 const DashboardContent = memo(function DashboardContent() {
   const { user, isLoading } = useAuth()
@@ -28,7 +29,7 @@ const DashboardContent = memo(function DashboardContent() {
   // Show loading state while authentication is being checked
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <LoadingSpinner size="lg" text="Loading dashboard..." />
       </div>
     )
@@ -39,7 +40,7 @@ const DashboardContent = memo(function DashboardContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="text-destructive text-lg font-semibold">Error loading dashboard</div>
           <div className="text-muted-foreground">{error.message}</div>
@@ -55,7 +56,7 @@ const DashboardContent = memo(function DashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="bg-gradient-to-br from-background via-background to-muted/20">
       {/* Premium Background Pattern */}
       <div className="fixed inset-0">
         {/* Subtle gradient overlay */}
@@ -70,7 +71,7 @@ const DashboardContent = memo(function DashboardContent() {
       </div>
       
       {/* Main Dashboard Content */}
-      <div className="relative pt-20 pb-8">
+      <div className="relative pb-8">
         <div className="container mx-auto px-4 space-y-8">
           {/* Header */}
           <DashboardHeader user={user} />
@@ -90,11 +91,14 @@ const DashboardContent = memo(function DashboardContent() {
             {/* Right Column - Sidebar */}
             <div className="space-y-8">
               <TodaysGoals />
-              <AITutorCard user={user} />
+              <AiConversations />
             </div>
           </div>
         </div>
       </div>
+      
+      {/* Floating Chatbot Button */}
+      <FloatingChatbotButton />
     </div>
   )
 })

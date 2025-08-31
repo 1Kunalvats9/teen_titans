@@ -89,7 +89,7 @@ export async function GET() {
       totalModules,
       completedModules,
       totalQuizzes: quizAttempts.length,
-      averageScore: Math.round(averageScore * 100) / 100,
+      averageScore: Math.round(averageScore),
       studyStreak,
       totalStudyTime,
       weeklyProgress: weeklyProgress.length

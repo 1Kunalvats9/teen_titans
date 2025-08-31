@@ -1,9 +1,9 @@
 // src/components/landing/Navbar.tsx
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BrainCircuit, Menu, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { BrainCircuit, Menu, User, LogOut, LayoutDashboard, Bot } from 'lucide-react';
 import { useAuth } from '@/hooks/auth';
 import ThemeToggleButton from '@/components/ui/theme-toggle-button';
 import Link from 'next/link';
@@ -11,13 +11,28 @@ import Link from 'next/link';
 export const Navbar = () => {
   const navLinks = ['Features', 'Pricing', 'Community'];
   const { user, logout, isLoading } = useAuth();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <motion.nav
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: 'easeInOut' }}
-      className="fixed top-0 text-foreground left-0 right-0 z-50 py-4 px-6 md:px-12 bg-transparent  border-b border-border"
+      className={`fixed top-0 text-foreground left-0 right-0 z-50 py-4 px-6 md:px-12 transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm' 
+          : 'bg-transparent border-b border-border/20'
+      }`}
     >
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
@@ -43,11 +58,21 @@ export const Navbar = () => {
               <Link href="/dashboard">
                 <motion.button 
                   whileHover={{ scale: 1.05 }} 
-                  className="flex items-center gap-2 px-3 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors cursor-pointer"
                   title="Dashboard"
                 >
                   <LayoutDashboard className="w-4 h-4" />
                   <span className="text-sm font-medium">Dashboard</span>
+                </motion.button>
+              </Link>
+              <Link href="/chatbot">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }} 
+                  className="flex items-center gap-2 px-3 py-2 bg-background border border-border text-foreground rounded-lg hover:bg-muted transition-colors cursor-pointer"
+                  title="AI Chatbot"
+                >
+                  <Bot className="w-4 h-4" />
+                  <span className="text-sm font-medium">Chatbot</span>
                 </motion.button>
               </Link>
               <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
@@ -60,7 +85,7 @@ export const Navbar = () => {
               </div>
               <motion.button 
                 whileHover={{ scale: 1.05 }} 
-                className="p-2 text-muted-foreground hover:text-foreground transition-colors" 
+                className="p-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" 
                 onClick={() => logout()}
                 title="Logout"
               >
@@ -70,14 +95,14 @@ export const Navbar = () => {
           ) : !isLoading ? (
             <>
               <Link href="/login">
-                <motion.button whileHover={{ scale: 1.05 }} className="px-4 py-2 text-primary font-semibold">
+                <motion.button whileHover={{ scale: 1.05 }} className="px-4 py-2 text-primary font-semibold cursor-pointer">
                   Log In
                 </motion.button>
               </Link>
               <Link href="/signup">
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: '0px 0px 8px rgb(37,99,235)' }}
-                  className="bg-accent text-white font-semibold px-4 py-2 rounded-lg"
+                  className="bg-accent text-white font-semibold px-4 py-2 rounded-lg cursor-pointer"
                 >
                   Sign Up
                 </motion.button>

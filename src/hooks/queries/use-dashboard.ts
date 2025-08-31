@@ -8,7 +8,7 @@ export const dashboardKeys = {
   stats: () => [...dashboardKeys.all, 'stats'] as const,
   modules: () => [...dashboardKeys.all, 'modules'] as const,
   recentActivity: () => [...dashboardKeys.all, 'recent-activity'] as const,
-  aiConversations: () => [...dashboardKeys.all, 'ai-conversations'] as const,
+
   todaysGoals: () => [...dashboardKeys.all, 'todays-goals'] as const,
 }
 
@@ -46,20 +46,6 @@ export const useRecentActivity = () => {
     queryKey: dashboardKeys.recentActivity(),
     queryFn: async () => {
       return await apiService.dashboard.getRecentActivity()
-    },
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  })
-}
-
-// AI Conversations Query
-export const useAIConversations = () => {
-  return useQuery({
-    queryKey: dashboardKeys.aiConversations(),
-    queryFn: async () => {
-      return await apiService.dashboard.getAIConversations()
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 5 * 60 * 1000, // 5 minutes
@@ -138,6 +124,48 @@ export const useDeleteGoal = () => {
   })
 }
 
+// Update Module Progress Mutation
+export const useUpdateModuleProgress = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ moduleId, progress, completed }: { moduleId: string; progress: number; completed?: boolean }) => {
+      return await apiService.dashboard.updateModuleProgress(moduleId, progress, completed)
+    },
+    onSuccess: () => {
+      // Invalidate both modules and stats to refresh the data
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.modules() })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.stats() })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.recentActivity() })
+      toast.success('Progress updated successfully')
+    },
+    onError: (error: any) => {
+      console.error('Update module progress error:', error)
+      toast.error('Failed to update progress')
+    },
+  })
+}
+
+// Complete Module Mutation
+export const useCompleteModule = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (moduleId: string) => {
+      return await apiService.dashboard.completeModule(moduleId)
+    },
+    onSuccess: () => {
+      // Invalidate all dashboard data to refresh everything
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
+      toast.success('Module completed! Great job! 🎉')
+    },
+    onError: (error: any) => {
+      console.error('Complete module error:', error)
+      toast.error('Failed to complete module')
+    },
+  })
+}
+
 // All Dashboard Data Query
 export const useAllDashboardData = () => {
   return useQuery({
@@ -165,7 +193,7 @@ export const useRefreshDashboardData = () => {
       queryClient.setQueryData(dashboardKeys.stats(), data.stats)
       queryClient.setQueryData(dashboardKeys.modules(), data.modules)
       queryClient.setQueryData(dashboardKeys.recentActivity(), data.activity)
-      queryClient.setQueryData(dashboardKeys.aiConversations(), data.conversations)
+
       queryClient.setQueryData(dashboardKeys.todaysGoals(), data.goals)
       queryClient.setQueryData(dashboardKeys.all, data)
     },

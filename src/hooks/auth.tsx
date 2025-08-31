@@ -83,15 +83,15 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
           if (!isOnboarded && !pathname.includes('/onboarding')) {
             // Redirect to onboarding if not onboarded
             router.push('/onboarding')
-          } else if (isOnboarded && pathname === '/') {
-            // Redirect to dashboard if onboarded and on home page
-            router.push('/dashboard')
           }
+          // Remove automatic redirect to dashboard - let users stay where they are
         } else {
           setUser(null)
           // Only redirect to login if not on public pages
           const publicPages = ['/', '/login', '/signup', '/verify-request']
-          if (!publicPages.includes(pathname)) {
+          const isPublicPage = publicPages.some(page => pathname.startsWith(page))
+          
+          if (!isPublicPage) {
             router.push('/login')
           }
         }

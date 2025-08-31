@@ -9,7 +9,8 @@ import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from "sonner";
 import { UniversalLoader } from "@/components/ui/universal-loader";
-
+import { FloatingChatbotButton } from "@/components/chatbot/FloatingChatbotButton";
+import { ConditionalPadding } from "@/components/ui/conditional-padding";
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,7 +31,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>
+      <body className="min-h-screen flex flex-col">
         <ThemeProvider>
           <QueryProvider>
             <AuthProvider>
@@ -38,7 +39,10 @@ export default function RootLayout({
                 <UniversalLoader>
                   <OnboardingProvider>
                     <Navbar />
-                    {children}
+                    <ConditionalPadding>
+                      {children}
+                    </ConditionalPadding>
+                    <FloatingChatbotButton />
                     <Toaster />
                     <Footer />
                   </OnboardingProvider>

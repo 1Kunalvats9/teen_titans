@@ -19,6 +19,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { BackButton } from '@/components/ui/back-button'
 import { CreateModuleForm } from '@/components/dashboard/CreateModuleForm'
 import { AnimatePresence } from 'framer-motion'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
@@ -153,7 +154,7 @@ function ModulesPageContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           <div className="text-muted-foreground">Loading modules...</div>
@@ -165,7 +166,7 @@ function ModulesPageContent() {
   // Show loading state while session is being fetched
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <LoadingSpinner size="lg" text="Loading..." />
       </div>
     )
@@ -174,7 +175,7 @@ function ModulesPageContent() {
   // Show loading state while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <LoadingSpinner size="lg" text="Loading..." />
       </div>
     )
@@ -184,7 +185,7 @@ function ModulesPageContent() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="bg-gradient-to-br from-background via-background to-muted/20">
       {/* Premium Background Pattern */}
       <div className="fixed inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/95 to-background/90" />
@@ -194,10 +195,16 @@ function ModulesPageContent() {
       </div>
 
       {/* Main Content */}
-      <div className="relative pt-20 pb-8">
+      <div className="relative pb-8">
         <div className="container mx-auto px-4">
           {/* Header */}
           <div className="mb-8">
+            <div className="flex items-center gap-4 mb-6">
+              <BackButton href="/dashboard">
+                Back to Dashboard
+              </BackButton>
+            </div>
+            
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -219,7 +226,7 @@ function ModulesPageContent() {
                   variant={!showDeleted ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setShowDeleted(false)}
-                  className="px-4"
+                  className="px-4 cursor-pointer"
                 >
                   Active Modules
                 </Button>
@@ -227,7 +234,7 @@ function ModulesPageContent() {
                   variant={showDeleted ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setShowDeleted(true)}
-                  className="px-4"
+                  className="px-4 cursor-pointer"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   Deleted ({deletedModules.length})
@@ -257,7 +264,7 @@ function ModulesPageContent() {
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 cursor-pointer"
                   >
                     <Grid className="h-4 w-4" />
                   </Button>
@@ -265,7 +272,7 @@ function ModulesPageContent() {
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 cursor-pointer"
                   >
                     <List className="h-4 w-4" />
                   </Button>
@@ -276,7 +283,7 @@ function ModulesPageContent() {
                   <div className="flex gap-2">
                     <Button
                       onClick={() => setShowCreateForm(true)}
-                      className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                      className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 cursor-pointer"
                     >
                       <Sparkles className="mr-2 h-4 w-4" />
                       Create Module
@@ -285,6 +292,7 @@ function ModulesPageContent() {
                       onClick={debugModules}
                       variant="outline"
                       size="sm"
+                      className="cursor-pointer"
                     >
                       Debug
                     </Button>
@@ -338,7 +346,7 @@ function ModulesPageContent() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={(e) => handleRestoreModule(e, module.id)}
-                                    className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary"
+                                    className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary cursor-pointer"
                                     disabled={restoreModuleMutation.isPending}
                                   >
                                     {restoreModuleMutation.isPending && restoreModuleMutation.variables === module.id ? (
@@ -352,7 +360,7 @@ function ModulesPageContent() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={(e) => handleDeleteModule(e, module.id)}
-                                    className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                    className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive cursor-pointer"
                                     disabled={deleteModuleMutation.isPending}
                                   >
                                     {deleteModuleMutation.isPending && deleteModuleMutation.variables === module.id ? (
@@ -471,7 +479,7 @@ function ModulesPageContent() {
               {!showDeleted && (
                 <Button
                   onClick={() => setShowCreateForm(true)}
-                  className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 cursor-pointer"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
                   Create Your First Module
@@ -508,7 +516,7 @@ function ModulesPageContent() {
 export default function ModulesPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           <div className="text-muted-foreground">Loading modules...</div>

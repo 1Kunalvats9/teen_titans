@@ -78,7 +78,7 @@ export const API_ENDPOINTS = {
     STATS: '/api/dashboard/stats',
     MODULES: '/api/dashboard/modules',
     RECENT_ACTIVITY: '/api/dashboard/recent-activity',
-    AI_CONVERSATIONS: '/api/dashboard/ai-conversations',
+  
     TODAYS_GOALS: '/api/dashboard/todays-goals',
   },
   

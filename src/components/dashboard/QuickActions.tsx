@@ -15,7 +15,7 @@ import {
 import { PremiumCard } from '@/components/ui/premium-card'
 import { Button } from '@/components/ui/button'
 import { ModuleSearch } from './ModuleSearch'
-
+import { toast } from 'sonner'
 
 const quickActions = [
   {
@@ -28,13 +28,13 @@ const quickActions = [
     action: 'learn'
   },
   {
-    title: 'AI Tutor Chat',
-    description: 'Get help from your tutor',
+    title: 'AI Chatbot',
+    description: 'Ask questions & solve problems',
     icon: Brain,
     color: 'text-purple-500',
     bgColor: 'bg-purple-500/10',
     borderColor: 'border-purple-500/20',
-    action: 'chat'
+    action: 'chatbot'
   },
   {
     title: 'Take Quiz',
@@ -71,6 +71,15 @@ const quickActions = [
     bgColor: 'bg-cyan-500/10',
     borderColor: 'border-cyan-500/20',
     action: 'new'
+  },
+  {
+    title: 'AI Tutor Demo',
+    description: 'Voice learning experience',
+    icon: Sparkles,
+    color: 'text-indigo-500',
+    bgColor: 'bg-indigo-500/10',
+    borderColor: 'border-indigo-500/20',
+    action: 'tutor-demo'
   }
 ]
 
@@ -82,28 +91,36 @@ export function QuickActions() {
     switch (action) {
       case 'learn':
         // Navigate to learning modules
-        console.log('Navigate to learning')
+        router.push('/modules')
         break
-      case 'chat':
-        // Open AI chat
-        console.log('Open AI chat')
+      case 'chatbot':
+        // Open AI chatbot
+        router.push('/chatbot')
         break
       case 'quiz':
-        // Navigate to quizzes
-        console.log('Navigate to quizzes')
+        // Navigate to quizzes - show available quizzes from modules
+        router.push('/modules?view=quizzes')
+        toast.info('Quiz feature coming soon! For now, check your modules for available quizzes.')
         break
       case 'group':
         // Navigate to study groups
-        console.log('Navigate to study groups')
+        toast.info('Study Groups feature coming soon! Join our community discussions.')
         break
       case 'flashcards':
         // Navigate to flashcards
-        console.log('Navigate to flashcards')
+        router.push('/modules?view=flashcards')
+        toast.info('Flashcards feature coming soon! Review your learning materials.')
         break
       case 'new':
         // Navigate to modules page with create form
         router.push('/modules?create=true')
         break
+      case 'tutor-demo':
+        // Open AI tutor demo
+        router.push('/ai-tutor-demo')
+        break
+      default:
+        console.log('Unknown action:', action)
     }
   }
 
@@ -163,7 +180,11 @@ export function QuickActions() {
             <Sparkles className="w-4 h-4" />
             Create Module
           </Button>
-          <Button variant="outline" onClick={()=>{router.push('/modules')}} className="flex-1 gap-2 cursor-pointer">
+          <Button 
+            variant="outline" 
+            onClick={()=>{router.push('/modules')}} 
+            className="flex-1 gap-2 cursor-pointer"
+          >
             <Target className="w-4 h-4" />
             Practice
           </Button>

@@ -56,17 +56,17 @@ const HeroGridSection = () => {
         <rect width="100%" height="100%" strokeWidth="0" fill="url(#hero-grid-pattern-2)" />
       </svg>
       
-      <div className="py-24 sm:py-32 lg:pb-40">
+      <div className="pt-20 pb-24 sm:pb-32 lg:pb-40">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="relative mx-auto max-w-7xl text-center">
             <motion.h1
             variants={itemVariants}
-            className="bg-gradient-to-br from-white to-zinc-500 bg-clip-text text-5xl/[1.07] font-bold tracking-tight text-transparent md:text-7xl/[1.07]"
+            className="text-5xl/[1.07] font-bold tracking-tight text-foreground md:text-7xl/[1.07]"
             style={{opacity: 1,transform: "none"}}
           >
             Build Your Personal <span className="text-primary">Learning OS</span>
             <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-b from-zinc-100 via-zinc-400 to-zinc-700">AI Tutors • Modules • Quizzes • Community</span>
+            <span className="text-muted-foreground">AI Tutors • Modules • Quizzes • Community</span>
           </motion.h1>
             <motion.p
             variants={itemVariants}

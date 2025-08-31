@@ -1,14 +1,17 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { BookOpen, Clock, Target, Play, CheckCircle } from 'lucide-react'
+import { BookOpen, Clock, Target, Play, CheckCircle, Trophy } from 'lucide-react'
 import { PremiumCard } from '@/components/ui/premium-card'
 import { Button } from '@/components/ui/button'
-import { useLearningModules } from '@/hooks/queries/use-dashboard'
+import { useLearningModules, useCompleteModule, useUpdateModuleProgress } from '@/hooks/queries/use-dashboard'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export function LearningProgress() {
   const { data: modules, isLoading, error } = useLearningModules()
+  const completeModule = useCompleteModule()
+  const updateProgress = useUpdateModuleProgress()
   const router = useRouter()
 
   const getDifficultyColor = (difficulty: string | undefined) => {
@@ -29,6 +32,31 @@ export function LearningProgress() {
     const hours = Math.floor(minutes / 60)
     const mins = minutes % 60
     return `${hours}h ${mins}m`
+  }
+
+  const handleContinueModule = (module: any) => {
+    router.push(`/modules/${module.id}`)
+  }
+
+  const handleCompleteModule = async (moduleId: string) => {
+    try {
+      await completeModule.mutateAsync(moduleId)
+    } catch (error) {
+      console.error('Failed to complete module:', error)
+    }
+  }
+
+  const handleQuickProgress = async (moduleId: string, currentProgress: number) => {
+    const newProgress = Math.min(currentProgress + 0.25, 1.0) // Increment by 25%
+    try {
+      await updateProgress.mutateAsync({ 
+        moduleId, 
+        progress: newProgress,
+        completed: newProgress >= 1.0 
+      })
+    } catch (error) {
+      console.error('Failed to update progress:', error)
+    }
   }
 
   if (isLoading) {
@@ -59,6 +87,13 @@ export function LearningProgress() {
       >
         <div className="text-center py-8">
           <p className="text-muted-foreground">Failed to load modules</p>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
+            Try Again
+          </Button>
         </div>
       </PremiumCard>
     )
@@ -91,6 +126,12 @@ export function LearningProgress() {
                     <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(module.difficulty)}`}>
                       {module.difficulty || 'intermediate'}
                     </span>
+                    {module.isCompleted && (
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-500 border border-green-500/20">
+                        <Trophy className="w-3 h-3 inline mr-1" />
+                        Completed
+                      </span>
+                    )}
                   </div>
                   
                   <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
@@ -123,25 +164,55 @@ export function LearningProgress() {
                     </div>
                   </div>
                   
-                  {/* Action Button */}
-                  <Button 
-                    size="sm" 
-                    variant={module.isCompleted ? "outline" : "default"}
-                    className="cursor-pointer"
-                    onClick={() => router.push(`/modules/${module.id}`)}
-                  >
+                  {/* Action Buttons */}
+                  <div className="flex flex-col gap-2">
                     {module.isCompleted ? (
-                      <>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="cursor-pointer"
+                        onClick={() => handleContinueModule(module)}
+                      >
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Review
-                      </>
+                      </Button>
                     ) : (
                       <>
-                        <Play className="w-4 h-4 mr-2" />
-                        Continue
+                        <Button 
+                          size="sm" 
+                          variant="default"
+                          className="cursor-pointer"
+                          onClick={() => handleContinueModule(module)}
+                        >
+                          <Play className="w-4 h-4 mr-2" />
+                          Continue
+                        </Button>
+                        {module.progress < 1.0 && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="cursor-pointer text-xs"
+                            onClick={() => handleQuickProgress(module.id, module.progress)}
+                            disabled={updateProgress.isPending}
+                          >
+                            +25%
+                          </Button>
+                        )}
+                        {module.progress >= 0.75 && !module.isCompleted && (
+                          <Button 
+                            size="sm" 
+                            variant="default"
+                            className="cursor-pointer bg-foreground text-background hover:bg-foreground/90"
+                            onClick={() => handleCompleteModule(module.id)}
+                            disabled={completeModule.isPending}
+                          >
+                            <Trophy className="w-4 h-4 mr-2" />
+                            Complete
+                          </Button>
+                        )}
                       </>
                     )}
-                  </Button>
+                  </div>
                 </div>
               </div>
             </motion.div>

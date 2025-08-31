@@ -32,8 +32,8 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Redirect authenticated users away from auth pages
-  if (isPublicPage && pathname !== '/') {
+  // Redirect authenticated users away from auth pages (but not from home page)
+  if (isPublicPage && pathname !== '/' && (pathname === '/login' || pathname === '/signup')) {
     try {
       const token = await getToken({ 
         req, 

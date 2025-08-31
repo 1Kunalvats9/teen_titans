@@ -73,13 +73,7 @@ export interface RecentActivity {
   xpEarned?: number
 }
 
-export interface AIConversation {
-  id: string
-  title: string
-  lastMessage: string
-  timestamp: string
-  unreadCount: number
-}
+
 
 export interface TodaysGoal {
   id: string
@@ -163,11 +157,6 @@ export const dashboardAPI = {
     return response.data.data
   },
 
-  getAIConversations: async (): Promise<AIConversation[]> => {
-    const response = await api.get(API_ENDPOINTS.DASHBOARD.AI_CONVERSATIONS)
-    return response.data.data
-  },
-
   getTodaysGoals: async (): Promise<TodaysGoal[]> => {
     const response = await api.get(API_ENDPOINTS.DASHBOARD.TODAYS_GOALS)
     return response.data.data
@@ -187,12 +176,21 @@ export const dashboardAPI = {
     await api.delete(`${API_ENDPOINTS.DASHBOARD.TODAYS_GOALS}?id=${id}`)
   },
 
+  updateModuleProgress: async (moduleId: string, progress: number, completed?: boolean): Promise<any> => {
+    const response = await api.put(`/api/modules/${moduleId}/progress`, { progress, completed })
+    return response.data.data
+  },
+
+  completeModule: async (moduleId: string): Promise<any> => {
+    const response = await api.post(`/api/modules/${moduleId}/complete`)
+    return response.data.data
+  },
+
   getAllData: async () => {
-    const [stats, modules, activity, conversations, goals] = await Promise.all([
+    const [stats, modules, activity, goals] = await Promise.all([
       dashboardAPI.getStats(),
       dashboardAPI.getModules(),
       dashboardAPI.getRecentActivity(),
-      dashboardAPI.getAIConversations(),
       dashboardAPI.getTodaysGoals(),
     ])
 
@@ -200,7 +198,6 @@ export const dashboardAPI = {
       stats,
       modules,
       activity,
-      conversations,
       goals,
     }
   },
