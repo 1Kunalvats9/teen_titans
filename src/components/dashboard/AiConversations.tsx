@@ -46,26 +46,28 @@ export function AiConversations() {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-card to-card/80 border-border/50">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-primary" />
-            </div>
-            <CardTitle className="text-lg">Recent AI Conversations</CardTitle>
+    <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-foreground text-background">
+            <Sparkles className="h-5 w-5" />
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push('/ai-tutor')}
-            className="text-primary hover:text-primary/80"
-          >
-            Start New
-          </Button>
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">AI Conversations</h3>
+            <p className="text-sm text-muted-foreground">Recent learning sessions</p>
+          </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push('/ai-tutor')}
+          className="cursor-pointer"
+        >
+          Start New
+        </Button>
+      </div>
+      
+      <div className="space-y-3">
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -85,27 +87,27 @@ export function AiConversations() {
               >
                 <div
                   onClick={() => router.push(`/ai-tutor?conversation=${conversation.id}`)}
-                  className="group p-3 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 cursor-pointer"
+                  className="group p-3 rounded-lg border border-border hover:border-foreground/30 hover:bg-muted/50 transition-all duration-200 cursor-pointer"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
                         <h4 className="font-medium text-foreground text-sm truncate">
                           {conversation.title}
                         </h4>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs w-fit">
                           {conversation.messageCount} messages
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mb-2">
                         {truncateText(conversation.lastMessage)}
                       </p>
-                      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="w-3 h-3" />
                         <span>{formatTimeAgo(conversation.timestamp)}</span>
                       </div>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                   </div>
                 </div>
               </motion.div>
@@ -113,23 +115,23 @@ export function AiConversations() {
           </div>
         ) : (
           <div className="text-center py-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-              <MessageCircle className="w-6 h-6 text-primary" />
+            <div className="w-12 h-12 bg-foreground text-background rounded-full flex items-center justify-center mx-auto mb-3">
+              <MessageCircle className="w-6 h-6" />
             </div>
             <h4 className="font-medium text-foreground mb-1">No conversations yet</h4>
             <p className="text-sm text-muted-foreground mb-4">
-              Start your first learning session with Alisha
+              Start your first learning session with AI Tutor
             </p>
             <Button
               onClick={() => router.push('/ai-tutor')}
-              className="bg-foreground text-background hover:bg-foreground/90"
+              className="bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               Start Learning
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

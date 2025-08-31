@@ -29,7 +29,7 @@ const DashboardContent = memo(function DashboardContent() {
   // Show loading state while authentication is being checked
   if (isLoading) {
     return (
-      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <LoadingSpinner size="lg" text="Loading dashboard..." />
       </div>
     )
@@ -40,13 +40,13 @@ const DashboardContent = memo(function DashboardContent() {
 
   if (error) {
     return (
-      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="text-destructive text-lg font-semibold">Error loading dashboard</div>
           <div className="text-muted-foreground">{error.message}</div>
           <button 
             onClick={() => window.location.reload()} 
-            className="text-primary hover:text-primary/80"
+            className="text-primary hover:text-primary/80 cursor-pointer"
           >
             Try again
           </button>
@@ -56,43 +56,61 @@ const DashboardContent = memo(function DashboardContent() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Premium Background Pattern */}
-      <div className="fixed inset-0">
-        {/* Subtle gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/95 to-background/90" />
-        
-        {/* Animated grid pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] dark:bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)]" />
-        
-        {/* Radial gradient for depth */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.03),transparent_50%)] dark:bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.02),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,119,198,0.03),transparent_50%)] dark:bg-[radial-gradient(circle_at_80%_20%,rgba(255,119,198,0.02),transparent_50%)]" />
-      </div>
-      
+    <div className="min-h-screen bg-background">
       {/* Main Dashboard Content */}
-      <div className="relative pb-8">
-        <div className="container mx-auto px-4 space-y-8">
-          {/* Header */}
-          <DashboardHeader user={user} />
-          
-          {/* Stats Overview */}
-          <StatsOverview />
-          
-          {/* Main Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Main Content */}
-            <div className="lg:col-span-2 space-y-8">
-              <QuickActions />
-              <LearningProgress />
-              <RecentActivity />
+      <div className="container mx-auto px-4 py-6 space-y-8">
+        {/* Header */}
+        <DashboardHeader user={user} />
+        
+        {/* Welcome Section */}
+        <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                Welcome back, {user.name || 'Learner'}! 👋
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Ready to continue your learning journey? Here's what you can do today.
+              </p>
             </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button 
+                onClick={() => router.push('/modules')}
+                className="px-6 py-3 bg-foreground text-background rounded-lg font-medium hover:bg-foreground/90 transition-colors cursor-pointer"
+              >
+                Start Learning
+              </button>
+              <button 
+                onClick={() => router.push('/chatbot')}
+                className="px-6 py-3 border border-border text-foreground rounded-lg font-medium hover:bg-muted transition-colors cursor-pointer"
+              >
+                Ask AI Tutor
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Stats Overview */}
+        <StatsOverview />
+        
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+          {/* Left Column - Main Content */}
+          <div className="xl:col-span-3 space-y-8">
+            {/* Quick Actions */}
+            <QuickActions />
             
-            {/* Right Column - Sidebar */}
-            <div className="space-y-8">
-              <TodaysGoals />
-              <AiConversations />
-            </div>
+            {/* Learning Progress */}
+            <LearningProgress />
+            
+            {/* Recent Activity */}
+            <RecentActivity />
+          </div>
+          
+          {/* Right Column - Sidebar */}
+          <div className="space-y-8">
+            <TodaysGoals />
+            <AiConversations />
           </div>
         </div>
       </div>

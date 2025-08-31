@@ -80,11 +80,11 @@
 
 .dark {
   --background: oklch(0.08 0.002 49.25);
-  --foreground: oklch(0.985 0.001 106.423);
+  --foreground: oklch(1 0 0);
   --card: oklch(0.12 0.003 49.25);
-  --card-foreground: oklch(0.985 0.001 106.423);
+  --card-foreground: oklch(1 0 0);
   --popover: oklch(0.12 0.003 49.25);
-  --popover-foreground: oklch(0.985 0.001 106.423);
+  --popover-foreground: oklch(1 0 0);
   --primary: oklch(0.923 0.003 48.717);
   --primary-foreground: oklch(0.12 0.003 49.25);
   --secondary: oklch(0.15 0.004 49.25);
@@ -143,11 +143,63 @@
   /* Improved button and interactive element transitions */
   button, [role="button"], .cursor-pointer {
     transition: all 0.2s ease-in-out;
+    cursor: pointer;
   }
 
   /* Smooth card transitions */
   .card, [class*="card"] {
     transition: all 0.3s ease-in-out;
+  }
+
+  /* Mobile responsiveness improvements */
+  @media (max-width: 768px) {
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    
+    /* Ensure text doesn't overflow on mobile */
+    .text-4xl {
+      font-size: 1.875rem;
+      line-height: 2.25rem;
+    }
+    
+    .text-2xl {
+      font-size: 1.5rem;
+      line-height: 2rem;
+    }
+    
+    .text-lg {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+  }
+
+  /* Touch-friendly interactive elements */
+  @media (hover: none) and (pointer: coarse) {
+    button, [role="button"], .cursor-pointer {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    input, textarea, select {
+      min-height: 44px;
+    }
+  }
+
+  /* Ensure proper spacing on mobile */
+  @media (max-width: 640px) {
+    .space-y-8 > * + * {
+      margin-top: 1.5rem;
+    }
+    
+    .space-y-6 > * + * {
+      margin-top: 1.25rem;
+    }
+    
+    .space-y-4 > * + * {
+      margin-top: 1rem;
+    }
   }
 }
 

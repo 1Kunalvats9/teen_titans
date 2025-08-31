@@ -10,7 +10,9 @@ import {
   Zap, 
   Play,
   Plus,
-  Sparkles
+  Sparkles,
+  Search,
+  ArrowRight
 } from 'lucide-react'
 import { PremiumCard } from '@/components/ui/premium-card'
 import { Button } from '@/components/ui/button'
@@ -22,64 +24,50 @@ const quickActions = [
     title: 'Start Learning',
     description: 'Continue your modules',
     icon: BookOpen,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/20',
-    action: 'learn'
+    action: 'learn',
+    category: 'primary'
   },
   {
     title: 'AI Chatbot',
     description: 'Ask questions & solve problems',
     icon: Brain,
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-500/10',
-    borderColor: 'border-purple-500/20',
-    action: 'chatbot'
+    action: 'chatbot',
+    category: 'primary'
   },
   {
     title: 'Take Quiz',
     description: 'Test your knowledge',
     icon: Target,
-    color: 'text-green-500',
-    bgColor: 'bg-green-500/10',
-    borderColor: 'border-green-500/20',
-    action: 'quiz'
+    action: 'quiz',
+    category: 'secondary'
   },
   {
     title: 'Study Group',
     description: 'Join discussions',
     icon: Users,
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-500/10',
-    borderColor: 'border-orange-500/20',
-    action: 'group'
+    action: 'group',
+    category: 'secondary'
   },
   {
     title: 'Flashcards',
     description: 'Review with SRS',
     icon: Zap,
-    color: 'text-pink-500',
-    bgColor: 'bg-pink-500/10',
-    borderColor: 'border-pink-500/20',
-    action: 'flashcards'
+    action: 'flashcards',
+    category: 'secondary'
   },
   {
     title: 'New Module',
     description: 'Explore topics',
     icon: Plus,
-    color: 'text-cyan-500',
-    bgColor: 'bg-cyan-500/10',
-    borderColor: 'border-cyan-500/20',
-    action: 'new'
+    action: 'new',
+    category: 'secondary'
   },
   {
     title: 'AI Tutor Demo',
     description: 'Voice learning experience',
     icon: Sparkles,
-    color: 'text-indigo-500',
-    bgColor: 'bg-indigo-500/10',
-    borderColor: 'border-indigo-500/20',
-    action: 'tutor-demo'
+    action: 'tutor-demo',
+    category: 'secondary'
   }
 ]
 
@@ -124,74 +112,142 @@ export function QuickActions() {
     }
   }
 
+  const primaryActions = quickActions.filter(action => action.category === 'primary')
+  const secondaryActions = quickActions.filter(action => action.category === 'secondary')
+
   return (
-    <PremiumCard 
-      icon={<Play className="w-5 h-5" />}
-      title="Quick Actions"
-      subtitle="Jump into your learning"
-    >
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {quickActions.map((action, index) => {
-          const Icon = action.icon
-          return (
-            <motion.div
-              key={action.title}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <button
-                onClick={() => handleAction(action.action)}
-                className="group w-full p-4 rounded-xl border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg cursor-pointer"
+    <div className="space-y-6">
+      {/* Primary Actions */}
+      <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-foreground text-background">
+            <Play className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">Quick Start</h3>
+            <p className="text-sm text-muted-foreground">Jump into your learning journey</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {primaryActions.map((action, index) => {
+            const Icon = action.icon
+            return (
+              <motion.div
+                key={action.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl border ${action.bgColor} ${action.borderColor} group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className={`h-6 w-6 ${action.color}`} />
+                <button
+                  onClick={() => handleAction(action.action)}
+                  className="w-full p-4 rounded-xl border border-border hover:border-foreground/30 transition-all duration-200 cursor-pointer group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-foreground text-background group-hover:bg-foreground/90 transition-colors">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    
+                    <div className="flex-1 text-left">
+                      <h4 className="font-semibold text-foreground text-sm group-hover:text-foreground/80 transition-colors">
+                        {action.title}
+                      </h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {action.description}
+                      </p>
+                    </div>
+                    
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                   </div>
-                  
-                  <div>
-                    <h4 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
-                      {action.title}
-                    </h4>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {action.description}
-                    </p>
+                </button>
+              </motion.div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Secondary Actions */}
+      <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-foreground text-background">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">More Tools</h3>
+            <p className="text-sm text-muted-foreground">Additional learning resources</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {secondaryActions.map((action, index) => {
+            const Icon = action.icon
+            return (
+              <motion.div
+                key={action.title}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <button
+                  onClick={() => handleAction(action.action)}
+                  className="w-full p-3 rounded-lg border border-border hover:border-foreground/30 transition-all duration-200 cursor-pointer group"
+                >
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground text-background group-hover:bg-foreground/90 transition-colors">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium text-foreground text-xs group-hover:text-foreground/80 transition-colors">
+                        {action.title}
+                      </h4>
+                    </div>
                   </div>
-                </div>
-              </button>
-            </motion.div>
-          )
-        })}
+                </button>
+              </motion.div>
+            )
+          })}
+        </div>
       </div>
       
       {/* Search and Create Section */}
-      <div className="mt-6 pt-6 border-t border-border/50 space-y-4">
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium text-foreground">Search Modules</h4>
-          <ModuleSearch />
+      <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-foreground text-background">
+            <Search className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">Find & Create</h3>
+            <p className="text-sm text-muted-foreground">Search modules or create new ones</p>
+          </div>
         </div>
         
-        <div className="flex gap-3">
-          <Button 
-            variant="outline" 
-            className="flex-1 gap-2 cursor-pointer"
-            onClick={() => router.push('/modules?create=true')}
-          >
-            <Sparkles className="w-4 h-4" />
-            Create Module
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={()=>{router.push('/modules')}} 
-            className="flex-1 gap-2 cursor-pointer"
-          >
-            <Target className="w-4 h-4" />
-            Practice
-          </Button>
+        <div className="space-y-4">
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-foreground">Search Modules</h4>
+            <ModuleSearch />
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              variant="outline" 
+              className="flex-1 gap-2 cursor-pointer"
+              onClick={() => router.push('/modules?create=true')}
+            >
+              <Plus className="w-4 h-4" />
+              Create Module
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={()=>{router.push('/modules')}} 
+              className="flex-1 gap-2 cursor-pointer"
+            >
+              <Target className="w-4 h-4" />
+              Browse All
+            </Button>
+          </div>
         </div>
       </div>
-
-
-    </PremiumCard>
+    </div>
   )
 }

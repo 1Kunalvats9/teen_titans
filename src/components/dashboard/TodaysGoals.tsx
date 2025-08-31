@@ -71,11 +71,19 @@ export function TodaysGoals() {
 
   return (
     <>
-      <PremiumCard 
-        icon={<Target className="w-5 h-5" />}
-        title="Today's Goals"
-        subtitle={`${completedGoals.length} of ${goals.length} completed`}
-      >
+      <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-foreground text-background">
+            <Target className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">Today's Goals</h3>
+            <p className="text-sm text-muted-foreground">
+              {completedGoals.length} of {goals.length} completed
+            </p>
+          </div>
+        </div>
+        
         <div className="space-y-4">
           {/* Add New Goal */}
           <div className="flex gap-2">
@@ -91,7 +99,7 @@ export function TodaysGoals() {
               onClick={handleAddGoal}
               disabled={!newTask.trim() || createGoalMutation.isPending}
               size="sm"
-              className="shrink-0"
+              className="shrink-0 cursor-pointer"
             >
               {createGoalMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -130,17 +138,17 @@ export function TodaysGoals() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="group flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:border-primary/30 transition-colors"
+                    className="group flex items-center gap-3 p-3 rounded-lg border border-border hover:border-foreground/30 transition-colors"
                   >
                     <button
                       onClick={() => handleToggleGoal(goal.id, goal.completed)}
                       disabled={updateGoalMutation.isPending}
-                      className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-muted-foreground/30 hover:border-primary/50 transition-colors flex items-center justify-center"
+                      className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-muted-foreground/30 hover:border-foreground/50 transition-colors flex items-center justify-center cursor-pointer"
                     >
                       {updateGoalMutation.isPending ? (
                         <Loader2 className="w-3 h-3 animate-spin" />
                       ) : (
-                        <CheckCircle className="w-3 h-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <CheckCircle className="w-3 h-3 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       )}
                     </button>
                     
@@ -151,7 +159,7 @@ export function TodaysGoals() {
                     <button
                       onClick={() => handleDeleteGoal(goal.id, goal.task)}
                       disabled={deleteGoalMutation.isPending}
-                      className="flex-shrink-0 w-5 h-5 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-all"
+                      className="flex-shrink-0 w-5 h-5 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -165,14 +173,14 @@ export function TodaysGoals() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="group flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-muted/20"
+                    className="group flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/20"
                   >
                     <button
                       onClick={() => handleToggleGoal(goal.id, goal.completed)}
                       disabled={updateGoalMutation.isPending}
-                      className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-primary bg-primary flex items-center justify-center"
+                      className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-foreground bg-foreground flex items-center justify-center cursor-pointer"
                     >
-                      <CheckCircle className="w-3 h-3 text-primary-foreground" />
+                      <CheckCircle className="w-3 h-3 text-background" />
                     </button>
                     
                     <span className="flex-1 text-sm text-muted-foreground line-through">
@@ -182,7 +190,7 @@ export function TodaysGoals() {
                     <button
                       onClick={() => handleDeleteGoal(goal.id, goal.task)}
                       disabled={deleteGoalMutation.isPending}
-                      className="flex-shrink-0 w-5 h-5 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-all"
+                      className="flex-shrink-0 w-5 h-5 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -209,7 +217,7 @@ export function TodaysGoals() {
             </div>
           )}
         </div>
-      </PremiumCard>
+      </div>
 
       {/* Confirmation Modal */}
       <ConfirmationModal

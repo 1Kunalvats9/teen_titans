@@ -41,14 +41,6 @@ export const Navbar = () => {
           <h1 className="text-xl font-bold text-primary">LearnOS</h1>
         </Link>
 
-        {/* Desktop Navigation Links */}
-        <ul className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <motion.li key={link} whileHover={{ scale: 1.05 }} className="text-muted-foreground hover:text-foreground transition-colors font-medium cursor-pointer">
-              {link}
-            </motion.li>
-          ))}
-        </ul>
 
         {/* Action Buttons */}
         <div className="hidden md:flex items-center gap-4">
