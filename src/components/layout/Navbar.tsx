@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BrainCircuit, Menu, User, LogOut, LayoutDashboard, Bot } from 'lucide-react';
+import { BrainCircuit, Menu, User, LogOut, LayoutDashboard, Bot, Users } from 'lucide-react';
 import { useAuth } from '@/hooks/auth';
 import ThemeToggleButton from '@/components/ui/theme-toggle-button';
 import Link from 'next/link';
@@ -73,6 +73,16 @@ export const Navbar = () => {
                 >
                   <Bot className="w-4 h-4" />
                   <span className="text-sm font-medium">Chatbot</span>
+                </motion.button>
+              </Link>
+              <Link href="/community">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }} 
+                  className="flex items-center gap-2 px-3 py-2 bg-background border border-border text-foreground rounded-lg hover:bg-muted transition-colors cursor-pointer"
+                  title="Communities"
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="text-sm font-medium">Communities</span>
                 </motion.button>
               </Link>
               <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">

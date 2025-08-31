@@ -124,13 +124,16 @@ export const authAPI = {
 
   uploadProfileImage: async (file: File) => {
     try {
-      const formData = new FormData()
-      formData.append('image', file)
-      
-      const response = await api.post(API_ENDPOINTS.AUTH.PROFILE_IMAGE, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      // Convert file to base64
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result as string)
+        reader.readAsDataURL(file)
+      })
+
+      const response = await api.post(API_ENDPOINTS.AUTH.PROFILE_IMAGE, {
+        file: base64,
+        folder: 'teen_titans/profile_images'
       })
       return { success: true, data: response.data }
     } catch (error) {

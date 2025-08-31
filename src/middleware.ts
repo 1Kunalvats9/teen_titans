@@ -7,21 +7,26 @@ const { getToken } = require('next-auth/jwt') as {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
+  console.log('Middleware processing pathname:', pathname)
 
   // Public pages that don't require authentication
   const publicPages = ['/', '/login', '/signup', '/verify-request']
   const isPublicPage = publicPages.includes(pathname)
 
-  // Guard dashboard and modules routes
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/modules')) {
+  // Guard dashboard, modules, and community routes
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/modules') || pathname.startsWith('/community')) {
+    console.log('Protected route detected:', pathname)
     try {
       const token = await getToken({ 
         req, 
         secret: process.env.NEXTAUTH_SECRET 
       })
 
+      console.log('Token check result:', token ? 'Token found' : 'No token')
+
       // Only redirect if there's definitely no token
       if (token === null) {
+        console.log('Redirecting to login - no token found')
         const url = new URL('/login', req.url)
         return NextResponse.redirect(url)
       }
@@ -34,6 +39,7 @@ export async function middleware(req: NextRequest) {
 
   // Redirect authenticated users away from auth pages (but not from home page)
   if (isPublicPage && pathname !== '/' && (pathname === '/login' || pathname === '/signup')) {
+    console.log('Checking auth redirect for:', pathname)
     try {
       const token = await getToken({ 
         req, 
@@ -41,6 +47,7 @@ export async function middleware(req: NextRequest) {
       })
 
       if (token) {
+        console.log('Redirecting authenticated user to dashboard')
         const url = new URL('/dashboard', req.url)
         return NextResponse.redirect(url)
       }
@@ -53,7 +60,12 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/modules/:path*', '/login', '/signup'],
+  matcher: [
+    '/dashboard/:path*', 
+    '/modules/:path*', 
+    '/login', 
+    '/signup'
+  ],
 }
 
 

@@ -70,6 +70,8 @@ model User {
   sentChatMessages    ChatMessage[]
   studySessions       StudySession[]
   todaysGoals         TodaysGoal[]
+  communityMembers    CommunityMember[]
+  communityMessages   CommunityMessage[]
 
   // NextAuth Required Relations
   accounts Account[]
@@ -321,6 +323,48 @@ model AiMessage {
 }
 
 // ========== COMMUNITY & CHAT ==========
+
+model Community {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members  CommunityMember[]
+  messages CommunityMessage[]
+}
+
+model CommunityMember {
+  role     String   @default("MEMBER") // e.g., "MEMBER", "ADMIN", "MODERATOR"
+  joinedAt DateTime @default(now())
+
+  // Relations & Composite Key
+  userId      String
+  communityId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@id([userId, communityId])
+}
+
+model CommunityMessage {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  expiresAt DateTime // Auto-deletion after 5 days
+
+  // Relations
+  authorId    String
+  communityId String
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, createdAt])
+  @@index([expiresAt]) // For cleanup queries
+}
 
 model ChatRoom {
   id          String   @id @default(cuid())

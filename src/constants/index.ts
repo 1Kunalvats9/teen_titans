@@ -9,6 +9,23 @@ export const AI_TUTOR_CONFIG = {
   }
 };
 
+// WebSocket Server Configuration
+export const WEBSOCKET_CONFIG = {
+  // Default to deployed server URL
+  serverUrl: 'wss://learnos-websocket-server.onrender.com',
+  // Local development URL
+  localUrl: 'ws://localhost:3001',
+  // Get the appropriate URL - prioritize environment variable, then deployed server
+  getUrl: () => {
+    // If environment variable is set, use it
+    if (process.env.NEXT_PUBLIC_WEBSOCKET_URL) {
+      return process.env.NEXT_PUBLIC_WEBSOCKET_URL;
+    }
+    // Otherwise, use deployed server URL
+    return 'wss://learnos-websocket-server.onrender.com';
+  }
+};
+
 // Learning Topics for AI Tutor
 export const LEARNING_TOPICS = [
   {

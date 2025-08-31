@@ -79,9 +79,11 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
           // Check if user is onboarded
           const isOnboarded = await checkOnboardingStatus(newUser.id)
+          console.log('Auth hook - user onboarded:', isOnboarded, 'pathname:', pathname)
           
           if (!isOnboarded && !pathname.includes('/onboarding')) {
             // Redirect to onboarding if not onboarded
+            console.log('Redirecting to onboarding - user not onboarded')
             router.push('/onboarding')
           }
           // Remove automatic redirect to dashboard - let users stay where they are
@@ -90,8 +92,10 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
           // Only redirect to login if not on public pages
           const publicPages = ['/', '/login', '/signup', '/verify-request']
           const isPublicPage = publicPages.some(page => pathname.startsWith(page))
+          console.log('Auth hook - no user, pathname:', pathname, 'isPublicPage:', isPublicPage)
           
           if (!isPublicPage) {
+            console.log('Redirecting to login - not a public page')
             router.push('/login')
           }
         }
