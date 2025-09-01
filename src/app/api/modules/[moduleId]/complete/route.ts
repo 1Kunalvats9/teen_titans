@@ -6,7 +6,7 @@ import { authOptions } from '@/lib/auth'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { moduleId: string } }
+  { params }: { params: Promise<{ moduleId: string }> }
 ) {
   try {
     const session = (await (getServerSession as unknown as (opts?: unknown) => Promise<Session | null>)(authOptions))
@@ -14,7 +14,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const moduleId = params.moduleId
+    const { moduleId } = await params
 
     // Check if user has access to this module
     const userModule = await prisma.userModule.findFirst({
@@ -50,7 +50,7 @@ export async function POST(
     })
 
     // Get the module details
-    const module = await prisma.module.findUnique({
+    const moduleData = await prisma.module.findUnique({
       where: { id: moduleId }
     })
 
@@ -68,8 +68,8 @@ export async function POST(
 
     return NextResponse.json({
       data: {
-        id: module?.id,
-        title: module?.title,
+        id: moduleData?.id,
+        title: moduleData?.title,
         progress: updatedUserModule.progress,
         completed: updatedUserModule.completed
       },

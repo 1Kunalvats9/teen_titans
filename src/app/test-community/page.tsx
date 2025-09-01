@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/auth'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import HalftoneWaves from '@/components/halftone-waves'
 
 export default function TestCommunityPage() {
   const { user, isLoading } = useAuth()
@@ -25,7 +26,11 @@ export default function TestCommunityPage() {
   }
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return (
+      <div className="min-h-screen bg-background">
+        <HalftoneWaves />
+      </div>
+    )
   }
 
   return (

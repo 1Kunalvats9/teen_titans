@@ -1,4 +1,4 @@
-// src/components/landing/Features.tsx
+// src/components/ui/Features.tsx
 'use client';
 
 import React, { useEffect, useRef } from 'react';
@@ -33,7 +33,7 @@ const featureList = [
     title: 'Gamified Experience',
     description: 'Earn XP, maintain streaks, and unlock badges as you master new skills, making learning addictive.',
   },
-    {
+  {
     icon: <Zap />,
     title: 'Spaced Repetition System',
     description: 'Master concepts for the long term with our integrated flashcard system based on SRS principles.',
@@ -113,5 +113,4 @@ const Features = () => {
   );
 };
 
-
-export default Features
+export default Features;

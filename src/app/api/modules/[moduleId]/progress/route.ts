@@ -6,7 +6,7 @@ import { authOptions } from '@/lib/auth'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { moduleId: string } }
+  { params }: { params: Promise<{ moduleId: string }> }
 ) {
   try {
     const session = (await (getServerSession as unknown as (opts?: unknown) => Promise<Session | null>)(authOptions))
@@ -15,7 +15,7 @@ export async function PUT(
     }
 
     const { progress, completed } = await request.json()
-    const moduleId = params.moduleId
+    const { moduleId } = await params
 
     // Validate input
     if (typeof progress !== 'number' || progress < 0 || progress > 1) {
@@ -47,14 +47,14 @@ export async function PUT(
     })
 
     // Get the module details
-    const module = await prisma.module.findUnique({
+    const moduleData = await prisma.module.findUnique({
       where: { id: moduleId }
     })
 
     return NextResponse.json({
       data: {
-        id: module?.id,
-        title: module?.title,
+        id: moduleData?.id,
+        title: moduleData?.title,
         progress: updatedUserModule.progress,
         completed: updatedUserModule.completed
       },

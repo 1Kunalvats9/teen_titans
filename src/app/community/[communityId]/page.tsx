@@ -10,9 +10,9 @@ import { ArrowLeft } from 'lucide-react'
 
 
 interface CommunityPageProps {
-  params: {
+  params: Promise<{
     communityId: string
-  }
+  }>
 }
 
 export default function CommunityPage({ params }: CommunityPageProps) {

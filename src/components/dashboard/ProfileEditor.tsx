@@ -16,7 +16,7 @@ interface ProfileEditorProps {
 }
 
 export function ProfileEditor({ onClose }: ProfileEditorProps) {
-  const { user, refreshUser } = useAuth()
+  const { user, refreshUserData } = useAuth()
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   
@@ -53,7 +53,7 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
         image: formData.image
       })
       
-      await refreshUser()
+      await refreshUserData()
       setIsEditing(false)
       toast({
         title: "Profile updated",
