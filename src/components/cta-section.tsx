@@ -104,10 +104,10 @@ export function CTASection() {
       <div className="relative z-10 flex flex-col justify-start items-center gap-9 max-w-4xl mx-auto">
         <div className="flex flex-col justify-start items-center gap-4 text-center">
           <h2 className="text-foreground text-4xl md:text-5xl lg:text-[68px] font-semibold leading-tight md:leading-tight lg:leading-[76px] break-words max-w-[435px]">
-            Coding made effortless
+            Learning made effortless
           </h2>
           <p className="text-muted-foreground text-sm md:text-base font-medium leading-[18.20px] md:leading-relaxed break-words max-w-2xl">
-            Hear how developers ship products faster, collaborate seamlessly, and build with confidence using Pointer's
+            Hear how learners learn everything faster, collaborate seamlessly, and grow with confidence using LearnOS's
             powerful AI tools
           </p>
         </div>

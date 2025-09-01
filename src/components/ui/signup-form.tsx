@@ -35,8 +35,11 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
         setError(res.message || 'Signup failed')
         return
       }
-      // Show success message and redirect to login
-      toast.success('Account created successfully! You can now log in.')
+      // Show success message with email verification info and redirect to login
+      toast.success('Account created successfully! Please check your email for verification link.', {
+        duration: 6000,
+        description: 'You can now log in after verifying your email address.'
+      })
       router.push('/login')
     } catch (error) {
       console.error('Signup error:', error)
@@ -128,7 +131,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
         <div className="mt-4 text-center text-sm">
           Already have an account?{" "}
           <Link href="/login" className="text-primary hover:text-primary/80 transition-colors duration-200 underline">
-            Log in
+            Sign in to LearnOS
           </Link>
         </div>
       </form>

@@ -1,5 +1,5 @@
 import type React from "react"
-import { Search } from "lucide-react"
+import { Search, LeafIcon } from "lucide-react"
 
 interface McpConnectivityIllustrationProps {
   className?: string
@@ -8,12 +8,12 @@ interface McpConnectivityIllustrationProps {
 const McpConnectivityIllustration: React.FC<McpConnectivityIllustrationProps> = ({ className = "" }) => {
   // Integration data with new SVG paths
   const integrations = [
-    { name: "Figma", icon: "/images/mcp-integrations/figma.svg", installed: true },
-    { name: "Shadcn UI", icon: "/images/mcp-integrations/shadcn.svg" },
-    { name: "Next.js", icon: "/images/mcp-integrations/nextjs.svg", installed: true },
-    { name: "Tailwind CSS", icon: "/images/mcp-integrations/tailwind-css.svg" },
-    { name: "Resend", icon: "/images/mcp-integrations/resend.svg", installed: true },
-    { name: "React", icon: "/images/mcp-integrations/react.svg" },
+    { name: "Figma", icon: "/figma.png", installed: true },
+    { name: "Shadcn UI", icon: "/shadcn.png" },
+    { name: "Next.js", icon: "/nextjs.png", installed: true },
+    { name: "Tailwind CSS", icon: "/tailwind.png" },
+    { name: "Resend", icon: "/resend.png", installed: true },
+    { name: "React", icon: "/react.png" },
   ]
 
   return (

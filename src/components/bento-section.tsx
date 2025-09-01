@@ -42,33 +42,33 @@ const BentoCard = ({ title, description, Component }: BentoCardProps) => (
 export function BentoSection() {
   const cards = [
     {
-      title: "AI-powered code reviews",
-      description: "Get instant feedback and suggestions to improve code quality and catch bugs early.",
+      title: "AI Voice Tutor",
+      description: "Learn naturally through voice conversations with your personalized AI tutor, Alisha.",
       Component: AiCodeReviews,
     },
     {
-      title: "Real-time coding collaboration",
-      description: "Work together with AI agents in real-time, previewing changes instantly as you code.",
+      title: "Interactive Learning Modules",
+      description: "Explore programming, web development, data science, and more with hands-on content.",
       Component: RealtimeCodingPreviews,
     },
     {
-      title: "Seamless tool integration",
-      description: "Connect with your favorite development tools and workflows in just one click.",
+      title: "Community Learning",
+      description: "Join study groups, share knowledge, and learn together with peers in topic-specific communities.",
       Component: OneClickIntegrationsIllustration,
     },
     {
-      title: "MCP server management",
-      description: "Easily configure and manage MCP server connections for enhanced AI capabilities.",
+      title: "Progress Tracking",
+      description: "Monitor your learning journey with detailed analytics and achievement milestones.",
       Component: MCPConnectivityIllustration,
     },
     {
-      title: "Multi-agent coding",
-      description: "Deploy multiple AI agents simultaneously to tackle complex coding challenges faster.",
+      title: "Adaptive Learning",
+      description: "AI-powered content that adapts to your skill level and learning pace for optimal growth.",
       Component: ParallelCodingAgents,
     },
     {
-      title: "Instant deployment",
-      description: "Deploy your code directly to Vercel with zero configuration hassle.",
+      title: "Multi-Platform Access",
+      description: "Learn anywhere, anytime with our responsive design that works on all devices seamlessly.",
       Component: EasyDeployment,
     },
   ]
@@ -80,10 +80,10 @@ export function BentoSection() {
         <div className="self-stretch py-8 md:py-14 flex flex-col justify-center items-center gap-2 z-10">
           <div className="flex flex-col justify-start items-center gap-4">
             <h2 className="w-full max-w-[655px] text-center text-foreground text-4xl md:text-6xl font-semibold leading-tight md:leading-[66px]">
-              Supercharge Your Learning Experience
+              Supercharge Your Learning Journey
             </h2>
             <p className="w-full max-w-[600px] text-center text-muted-foreground text-lg md:text-xl font-medium leading-relaxed">
-              Experience the future of learning with AI agents that understand your workflow and help you learn better and faster.
+              Experience the future of education with LearnOS AI-powered learning that adapts to your style and helps you master new skills faster than ever before.
             </p>
           </div>
         </div>

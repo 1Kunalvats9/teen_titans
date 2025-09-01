@@ -6,34 +6,34 @@ import { ChevronDown } from "lucide-react"
 
 const faqData = [
   {
-    question: "What is Pointer and who is it for?",
+    question: "What is LearnOS and who is it for?",
     answer:
-      "Pointer is an AI-powered development platform designed for developers, teams, and organizations who want toaccelerate their coding workflow. It's perfect for both individual developers looking to enhance their productivity and teams seeking seamless collaboration tools.",
+      "LearnOS is an AI-powered learning platform designed for students, professionals, and anyone looking to master technology skills. It's perfect for beginners starting their tech journey, students pursuing computer science, and professionals looking to upskill through interactive voice conversations and community learning.",
   },
   {
-    question: "How does Pointer's AI code review work?",
+    question: "How does the AI voice tutor work?",
     answer:
-      "Our AI analyzes your code in real-time, providing intelligent suggestions for improvements, catching potential bugs, and ensuring best practices. It learns from your coding patterns and adapts to your team's standards, making code reviews faster and more consistent.",
+      "Our AI voice tutor, Alisha, uses advanced natural language processing to have natural conversations with you. Simply start a voice chat, ask questions about any topic, and get instant explanations, examples, and guidance. The system adapts to your learning pace and provides personalized feedback to help you understand complex concepts better.",
   },
   {
-    question: "Can I integrate Pointer with my existing tools?",
+    question: "What learning topics are available on the platform?",
     answer:
-      "Yes! Pointer offers one-click integrations with popular development tools including GitHub, GitLab, VS Code, Slack, and many more. Our MCP connectivity allows you to easily manage and configure server access across your entire development stack.",
+      "We offer a comprehensive range of technology topics including Programming Fundamentals, Web Development, Data Science & AI, Mobile Development, Cybersecurity, and Cloud Computing. Each topic includes multiple subtopics with varying difficulty levels to match your current knowledge and learning goals.",
   },
   {
-    question: "What's included in the free plan?",
+    question: "Can I learn with others on the platform?",
     answer:
-      "The free plan includes real-time code suggestions, basic integrations, single MCP server connection, up to 2 AI coding agents, and Vercel deployments with Pointer branding. It's perfect for individual developers getting started.",
+      "Absolutely! LearnOS features community learning where you can join topic-specific study groups, participate in discussions, share resources, and even find mentors. Connect with peers who are learning similar topics, collaborate on projects, and build a supportive learning network.",
   },
   {
-    question: "How do parallel coding agents work?",
+    question: "How does the progress tracking system work?",
     answer:
-      "Our parallel coding agents can work on different parts of your codebase simultaneously, solving complex problems faster than traditional single-threaded approaches. You can launch multiple agents to handle different tasks like bug fixes, feature development, and code optimization concurrently.",
+      "Our platform tracks your learning journey with detailed analytics, achievement milestones, and progress indicators. You can see how much time you've spent learning, track completed modules, earn badges for accomplishments, and monitor your skill development across different topics.",
   },
   {
-    question: "Is my code secure with Pointer?",
+    question: "Is the platform accessible on all devices?",
     answer:
-      "Absolutely. We use enterprise-grade security measures including end-to-end encryption, secure data transmission, and compliance with industry standards. Your code never leaves your secure environment without your explicit permission, and we offer on-premises deployment options for enterprise customers.",
+      "Yes! Teen Titans is fully responsive and works seamlessly on smartphones, tablets, and laptops. You can study on your phone during commutes, use your tablet at coffee shops, or learn on your laptop at home. The voice features work best with a microphone, but all other features are fully accessible across devices.",
   },
 ]
 
@@ -99,7 +99,7 @@ export function FAQSection() {
             Frequently Asked Questions
           </h2>
           <p className="self-stretch text-center text-muted-foreground text-sm font-medium leading-[18.20px] break-words">
-            Everything you need to know about Pointer and how it can transform your development workflow
+            Everything you need to know about LearnOS and how it can transform your learning experience
           </p>
         </div>
       </div>
