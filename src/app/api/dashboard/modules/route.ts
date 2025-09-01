@@ -11,9 +11,12 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's modules with progress
+    // Get user's modules with progress, excluding deleted ones
     const userModules = await prisma.userModule.findMany({
-      where: { userId: session.user.id },
+      where: { 
+        userId: session.user.id,
+        deleted: false // Exclude modules marked as deleted
+      },
       include: { 
         module: {
           include: {

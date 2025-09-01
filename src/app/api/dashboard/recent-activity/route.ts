@@ -15,8 +15,7 @@ export async function GET() {
     const [
       recentModules,
       recentQuizzes,
-      recentFlashcards,
-      recentConversations
+      recentFlashcards
     ] = await Promise.all([
       // Recent module completions
       prisma.userModule.findMany({
@@ -55,17 +54,7 @@ export async function GET() {
         take: 5
       }).catch(() => []),
 
-      // Recent AI conversations
-      prisma.aiConversation.findMany({
-        where: { 
-          userId: session.user.id,
-          updatedAt: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-          }
-        },
-        orderBy: { updatedAt: 'desc' },
-        take: 5
-      }).catch(() => [])
+
     ])
 
     // Transform activities to match interface
@@ -84,7 +73,7 @@ export async function GET() {
         id: qa.id,
         type: 'quiz_taken' as const,
         title: `Quiz: ${qa.quiz.title}`,
-        description: `Scored ${Math.round(qa.score * 100)}% on ${qa.quiz.title}`,
+        description: `Scored ${Math.round(qa.score)}% on ${qa.quiz.title}`,
         timestamp: qa.createdAt,
         icon: '🧠'
       })),
@@ -98,14 +87,7 @@ export async function GET() {
         icon: '🔄'
       })),
       
-      ...recentConversations.map(conv => ({
-        id: conv.id,
-        type: 'ai_conversation' as const,
-        title: `AI Chat: ${conv.title || 'Untitled'}`,
-        description: 'Had a conversation with your AI tutor',
-        timestamp: conv.updatedAt,
-        icon: '🤖'
-      }))
+
     ]
 
     // Sort by timestamp and take the most recent 10

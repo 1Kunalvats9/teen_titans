@@ -21,6 +21,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'file (base64 or remote url) required' }, { status: 400 })
     }
 
+    // Validate file size (base64 string length * 0.75 gives approximate file size in bytes)
+    const estimatedSize = Math.round(file.length * 0.75)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (estimatedSize > maxSize) {
+      return NextResponse.json({ error: 'File size too large. Maximum size is 5MB' }, { status: 400 })
+    }
+
     // Validate that required environment variables are set
     const hasExplicitCreds = Boolean(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET)
     const hasUrl = Boolean(process.env.CLOUDINARY_URL)

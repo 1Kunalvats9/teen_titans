@@ -68,6 +68,12 @@ model User {
   aiConversations     AiConversation[]
   chatRoomMemberships ChatRoomMember[]
   sentChatMessages    ChatMessage[]
+  studySessions       StudySession[]
+  todaysGoals         TodaysGoal[]
+  communityMembers    CommunityMember[]
+  communityMessages   CommunityMessage[]
+  sentInvites        CommunityInvite[] @relation("Inviter")
+  receivedInvites    CommunityInvite[] @relation("Invitee")
 
   // NextAuth Required Relations
   accounts Account[]
@@ -137,6 +143,7 @@ model Module {
   projects        Project[]
   chatRoom        ChatRoom?
   aiConversations AiConversation[]
+  studySessions   StudySession[]
 }
 
 model Step {
@@ -246,6 +253,7 @@ model UserModule {
   id        String  @id @default(cuid())
   progress  Float   @default(0) // Percentage completed e.g., 75.0
   completed Boolean @default(false)
+  deleted   Boolean @default(false) // Track if user has "deleted" this module for themselves
 
   // Relations
   userId   String
@@ -318,6 +326,70 @@ model AiMessage {
 
 // ========== COMMUNITY & CHAT ==========
 
+model Community {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  isPrivate   Boolean  @default(false) // New field for public/private communities
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members  CommunityMember[]
+  messages CommunityMessage[]
+  invites  CommunityInvite[] // New relation for invites
+}
+
+model CommunityMember {
+  role     String   @default("MEMBER") // e.g., "MEMBER", "ADMIN", "MODERATOR"
+  joinedAt DateTime @default(now())
+
+  // Relations & Composite Key
+  userId      String
+  communityId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@id([userId, communityId])
+}
+
+// New model for community invites
+model CommunityInvite {
+  id          String   @id @default(cuid())
+  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime // Invites expire after 7 days
+  
+  // Relations
+  inviterId   String
+  inviteeId   String
+  communityId String
+  inviter     User      @relation("Inviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee     User      @relation("Invitee", fields: [inviteeId], references: [id], onDelete: Cascade)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([inviteeId, status])
+  @@index([communityId, status])
+  @@index([expiresAt]) // For cleanup queries
+}
+
+model CommunityMessage {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  expiresAt DateTime // Auto-deletion after 5 days
+
+  // Relations
+  authorId    String
+  communityId String
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, createdAt])
+  @@index([expiresAt]) // For cleanup queries
+}
+
 model ChatRoom {
   id          String   @id @default(cuid())
   name        String
@@ -357,4 +429,35 @@ model ChatMessage {
   room     ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@index([roomId, createdAt])
+}
+
+// ========== STUDY TRACKING & GOALS ==========
+
+model StudySession {
+  id        String   @id @default(cuid())
+  startTime DateTime @default(now())
+  endTime   DateTime?
+  duration  Int?     // Duration in minutes
+  moduleId  String?  // Optional - if studying a specific module
+  
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module Module? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+
+  @@index([userId, startTime])
+}
+
+model TodaysGoal {
+  id        String   @id @default(cuid())
+  task      String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  date      DateTime @default(now()) // The date this goal is for
+  
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
 }

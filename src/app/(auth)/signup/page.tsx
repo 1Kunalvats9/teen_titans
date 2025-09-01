@@ -21,10 +21,10 @@ export default function SignupPage() {
         <div className="bg-card backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-border">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">
-              Create your account
+              Join LearnOS
             </h1>
             <p className="text-muted-foreground">
-              Join us and start your learning journey
+              Create your account and start your learning journey
             </p>
           </div>
           

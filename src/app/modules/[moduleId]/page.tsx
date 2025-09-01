@@ -8,7 +8,6 @@ import {
   BookOpen, 
   Clock, 
   User, 
-  ArrowLeft,
   CheckCircle,
   Circle,
   Target,
@@ -21,11 +20,13 @@ import {
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { BackButton } from '@/components/ui/back-button'
 import { useModule } from '@/hooks/queries/use-modules'
 import { useParams } from 'next/navigation'
 import { QuizComponent } from '@/components/quiz/QuizComponent'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { EnhancedContent } from '@/components/ui/enhanced-content'
+import { ModuleChatbot } from '@/components/chatbot/ModuleChatbot'
 
 interface Step {
   id: string
@@ -61,7 +62,7 @@ interface Module {
   quizzes: Quiz[]
 }
 
-export default function ModulePage() {
+function ModuleContent() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
   const params = useParams()
@@ -71,12 +72,10 @@ export default function ModulePage() {
   const [showQuiz, setShowQuiz] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false)
 
   // Fetch module data using centralized hook
   const { data: module, isLoading: moduleLoading, error } = useModule(moduleId)
-
-  // Remove client-side redirect since middleware handles it
-  // This prevents conflicts between server-side and client-side redirects
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -97,7 +96,7 @@ export default function ModulePage() {
   }
 
   const handleNextStep = () => {
-    if (module && currentStep < module.steps.length - 1) {
+    if (module && module.steps && currentStep < module.steps.length - 1) {
       setIsNavigating(true)
       setCurrentStep(currentStep + 1)
       // Simulate loading time for better UX
@@ -113,7 +112,7 @@ export default function ModulePage() {
 
   if (isLoading || moduleLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <LoadingSpinner size="lg" text="Loading module..." />
       </div>
     )
@@ -121,14 +120,13 @@ export default function ModulePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="text-destructive text-lg font-semibold">Error loading module</div>
           <div className="text-muted-foreground">The module could not be found or loaded.</div>
-          <Button onClick={() => router.push('/modules')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+          <BackButton href="/modules">
             Back to Modules
-          </Button>
+          </BackButton>
         </div>
       </div>
     )
@@ -137,21 +135,36 @@ export default function ModulePage() {
   // Don't render anything if user is not authenticated (middleware will handle redirect)
   if (!user || !module) return null
 
+  // Don't render if module doesn't have steps
+  if (!module.steps || module.steps.length === 0) {
+    return (
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-destructive text-lg font-semibold">Module has no content</div>
+          <div className="text-muted-foreground">This module doesn't have any steps yet.</div>
+          <BackButton href="/modules">
+            Back to Modules
+          </BackButton>
+        </div>
+      </div>
+    )
+  }
+
   const currentStepData = module.steps[currentStep]
   const progress = ((currentStep + 1) / module.steps.length) * 100
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Premium Background Pattern */}
-      <div className="fixed inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/95 to-background/90" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] dark:bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.03),transparent_50%)] dark:bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.02),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,119,198,0.03),transparent_50%)] dark:bg-[radial-gradient(circle_at_80%_20%,rgba(255,119,198,0.02),transparent_50%)]" />
-      </div>
+    <div className="bg-gradient-to-br from-background via-background to-muted/20">
+        {/* Premium Background Pattern */}
+        <div className="fixed inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/95 to-background/90" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] dark:bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.03),transparent_50%)] dark:bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.02),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,119,198,0.03),transparent_50%)] dark:bg-[radial-gradient(circle_at_80%_20%,rgba(255,119,198,0.02),transparent_50%)]" />
+        </div>
 
       {/* Main Content */}
-      <div className="relative pt-20 pb-8">
+      <div className="relative pb-8">
         <div className="container mx-auto px-4">
           {/* Header */}
           <div className="mb-8">
@@ -161,14 +174,9 @@ export default function ModulePage() {
               transition={{ duration: 0.5 }}
             >
               <div className="flex items-center gap-4 mb-6">
-                <Button
-                  variant="ghost"
-                  onClick={() => router.push('/modules')}
-                  className="hover:bg-background/50"
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
+                <BackButton href="/modules">
                   Back to Modules
-                </Button>
+                </BackButton>
               </div>
 
               <div className="text-center mb-6">
@@ -181,14 +189,14 @@ export default function ModulePage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsBookmarked(!isBookmarked)}
-                      className="hover:bg-background/50"
+                      className="hover:bg-background/50 cursor-pointer"
                     >
                       <Bookmark className={`h-5 w-5 ${isBookmarked ? 'text-primary fill-primary' : 'text-muted-foreground'}`} />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="hover:bg-background/50"
+                      className="hover:bg-background/50 cursor-pointer"
                     >
                       <Share2 className="h-5 w-5 text-muted-foreground" />
                     </Button>
@@ -219,7 +227,7 @@ export default function ModulePage() {
                 </div>
                 <div className="flex items-center space-x-1">
                   <Target className="h-4 w-4" />
-                  <span>{module.quizzes.length} quiz</span>
+                  <span>{module.quizzes?.length || 0} quiz</span>
                 </div>
               </div>
 
@@ -258,7 +266,7 @@ export default function ModulePage() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
                         onClick={() => setCurrentStep(index)}
-                        className={`w-full text-left p-3 rounded-lg transition-all duration-200 flex items-center space-x-3 ${
+                        className={`w-full text-left p-3 rounded-lg transition-all duration-200 flex items-center space-x-3 cursor-pointer ${
                           index === currentStep
                             ? 'bg-primary/10 border border-primary/20 text-primary'
                             : 'hover:bg-muted/50 border border-transparent'
@@ -276,7 +284,7 @@ export default function ModulePage() {
                             {step.title}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            Step {index + 1} of {module.steps.length}
+                            Step {index + 1} of {module.steps?.length || 0}
                           </div>
                         </div>
                       </motion.button>
@@ -284,11 +292,11 @@ export default function ModulePage() {
                   </div>
 
                   {/* Quiz Button */}
-                  {module.quizzes.length > 0 && (
+                  {module.quizzes && module.quizzes.length > 0 && (
                     <div className="mt-6 pt-6 border-t border-border/50">
                       <Button
                         onClick={handleStartQuiz}
-                        className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                        className="w-full bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
                       >
                         <Target className="mr-2 h-4 w-4" />
                         Take Quiz
@@ -329,6 +337,7 @@ export default function ModulePage() {
                           size="sm"
                           onClick={handlePreviousStep}
                           disabled={currentStep === 0}
+                          className="cursor-pointer"
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
@@ -337,6 +346,7 @@ export default function ModulePage() {
                           size="sm"
                           onClick={handleNextStep}
                           disabled={currentStep === module.steps.length - 1}
+                          className="cursor-pointer"
                         >
                           <ChevronRight className="h-4 w-4" />
                         </Button>
@@ -360,6 +370,7 @@ export default function ModulePage() {
                   variant="outline"
                   onClick={handlePreviousStep}
                   disabled={currentStep === 0}
+                  className="cursor-pointer"
                 >
                   <ChevronLeft className="mr-2 h-4 w-4" />
                   Previous Step
@@ -374,7 +385,7 @@ export default function ModulePage() {
                 {currentStep === module.steps.length - 1 ? (
                   <Button
                     onClick={handleStartQuiz}
-                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                    className="bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
                   >
                     <Target className="mr-2 h-4 w-4" />
                     Take Quiz
@@ -382,7 +393,7 @@ export default function ModulePage() {
                 ) : (
                   <Button
                     onClick={handleNextStep}
-                    className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                    className="bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
                   >
                     Next Step
                     <ChevronRight className="ml-2 h-4 w-4" />
@@ -394,7 +405,16 @@ export default function ModulePage() {
         </div>
       </div>
 
-      {/* Floating Action Button */}
+      {/* Module Chatbot */}
+      <ModuleChatbot
+        moduleTitle={module.title}
+        currentStepTitle={currentStepData.title}
+        currentStepContent={currentStepData.content}
+        isOpen={isChatbotOpen}
+        onToggle={() => setIsChatbotOpen(!isChatbotOpen)}
+      />
+
+      {/* Module-specific Chatbot Button */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -404,13 +424,9 @@ export default function ModulePage() {
         <div className="flex flex-col gap-3">
           <Button
             size="lg"
-            className="rounded-full w-14 h-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
-            onClick={() => {
-              const element = document.querySelector('.lg\\:col-span-3')
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth' })
-              }
-            }}
+            className="rounded-full w-14 h-14 bg-foreground text-background hover:bg-foreground/90 shadow-lg cursor-pointer"
+            onClick={() => setIsChatbotOpen(!isChatbotOpen)}
+            title="Ask about this module"
           >
             <MessageSquare className="h-6 w-6" />
           </Button>
@@ -438,4 +454,8 @@ export default function ModulePage() {
       </AnimatePresence>
     </div>
   )
+}
+
+export default function ModulePage() {
+  return <ModuleContent />
 }

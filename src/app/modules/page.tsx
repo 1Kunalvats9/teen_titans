@@ -13,16 +13,19 @@ import {
   List,
   Sparkles,
   Trash2,
-  MoreVertical
+  MoreVertical,
+  RotateCcw
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { BackButton } from '@/components/ui/back-button'
 import { CreateModuleForm } from '@/components/dashboard/CreateModuleForm'
 import { AnimatePresence } from 'framer-motion'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { useModules, useDeleteModule, useDebugModules } from '@/hooks/queries/use-modules'
+import { useModules, useDeleteModule, useDebugModules, useDeletedModules, useRestoreModule } from '@/hooks/queries/use-modules'
 import { toast } from 'sonner'
+import { ConfirmationModal, useConfirmationModal } from '@/components/ui/confirmation-modal'
 
 interface Module {
   id: string
@@ -46,6 +49,10 @@ function ModulesPageContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [showDeleted, setShowDeleted] = useState(false)
+
+  // Confirmation modal
+  const { modalState, openModal, closeModal } = useConfirmationModal()
 
   // Check if we should show create form based on URL parameter
   useEffect(() => {
@@ -62,11 +69,16 @@ function ModulesPageContent() {
   // Delete module mutation using centralized hook
   const deleteModuleMutation = useDeleteModule()
   
+  // Deleted modules functionality
+  const { data: deletedModules = [], isLoading: deletedModulesLoading } = useDeletedModules()
+  const restoreModuleMutation = useRestoreModule()
+  
   // Debug modules using centralized hook
   const debugModulesQuery = useDebugModules()
 
-  // Filter modules based on search query
-  const filteredModules = modules.filter((module: Module) => {
+  // Filter modules based on search query and current view
+  const currentModules = showDeleted ? deletedModules : modules
+  const filteredModules = currentModules.filter((module: Module) => {
     if (!searchQuery.trim()) return true
     
     const query = searchQuery.toLowerCase()
@@ -112,14 +124,37 @@ function ModulesPageContent() {
 
   const handleDeleteModule = (e: React.MouseEvent, moduleId: string) => {
     e.stopPropagation()
-    if (confirm('Are you sure you want to remove this module from your dashboard?')) {
-      deleteModuleMutation.mutate(moduleId)
-    }
+    openModal({
+      title: 'Remove Module',
+      message: 'Are you sure you want to remove this module from your dashboard? You can restore it later from the Deleted tab.',
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+      onConfirm: () => {
+        deleteModuleMutation.mutate(moduleId)
+        closeModal()
+      }
+    })
+  }
+
+  const handleRestoreModule = (e: React.MouseEvent, moduleId: string) => {
+    e.stopPropagation()
+    openModal({
+      title: 'Restore Module',
+      message: 'Are you sure you want to restore this module to your dashboard?',
+      confirmText: 'Restore',
+      cancelText: 'Cancel',
+      variant: 'default',
+      onConfirm: () => {
+        restoreModuleMutation.mutate(moduleId)
+        closeModal()
+      }
+    })
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           <div className="text-muted-foreground">Loading modules...</div>
@@ -131,7 +166,7 @@ function ModulesPageContent() {
   // Show loading state while session is being fetched
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <LoadingSpinner size="lg" text="Loading..." />
       </div>
     )
@@ -140,7 +175,7 @@ function ModulesPageContent() {
   // Show loading state while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <LoadingSpinner size="lg" text="Loading..." />
       </div>
     )
@@ -150,7 +185,7 @@ function ModulesPageContent() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="bg-gradient-to-br from-background via-background to-muted/20">
       {/* Premium Background Pattern */}
       <div className="fixed inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/95 to-background/90" />
@@ -160,10 +195,16 @@ function ModulesPageContent() {
       </div>
 
       {/* Main Content */}
-      <div className="relative pt-20 pb-8">
+      <div className="relative pb-8">
         <div className="container mx-auto px-4">
           {/* Header */}
           <div className="mb-8">
+            <div className="flex items-center gap-4 mb-6">
+              <BackButton href="/dashboard">
+                Back to Dashboard
+              </BackButton>
+            </div>
+            
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -178,6 +219,29 @@ function ModulesPageContent() {
               </p>
             </motion.div>
 
+            {/* Tabs */}
+            <div className="flex items-center justify-center mb-6">
+              <div className="flex items-center bg-background/50 backdrop-blur-sm rounded-lg border border-border/50 p-1">
+                <Button
+                  variant={!showDeleted ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setShowDeleted(false)}
+                  className="px-4 cursor-pointer"
+                >
+                  Active Modules
+                </Button>
+                <Button
+                  variant={showDeleted ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setShowDeleted(true)}
+                  className="px-4 cursor-pointer"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Deleted ({deletedModules.length})
+                </Button>
+              </div>
+            </div>
+
             {/* Search and Controls */}
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="flex-1 max-w-md">
@@ -185,7 +249,7 @@ function ModulesPageContent() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="text"
-                    placeholder="Search modules..."
+                    placeholder={showDeleted ? "Search deleted modules..." : "Search modules..."}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 bg-background/50 backdrop-blur-sm border-border/50 focus:border-primary/50"
@@ -200,7 +264,7 @@ function ModulesPageContent() {
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 cursor-pointer"
                   >
                     <Grid className="h-4 w-4" />
                   </Button>
@@ -208,37 +272,40 @@ function ModulesPageContent() {
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 cursor-pointer"
                   >
                     <List className="h-4 w-4" />
                   </Button>
                 </div>
 
-                {/* Create Module Button */}
-                            <div className="flex gap-2">
-              <Button
-                onClick={() => setShowCreateForm(true)}
-                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-              >
-                <Sparkles className="mr-2 h-4 w-4" />
-                Create Module
-              </Button>
-              <Button
-                onClick={debugModules}
-                variant="outline"
-                size="sm"
-              >
-                Debug
-              </Button>
-            </div>
+                {/* Create Module Button - Only show for active modules */}
+                {!showDeleted && (
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setShowCreateForm(true)}
+                      className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 cursor-pointer"
+                    >
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Create Module
+                    </Button>
+                    <Button
+                      onClick={debugModules}
+                      variant="outline"
+                      size="sm"
+                      className="cursor-pointer"
+                    >
+                      Debug
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           {/* Modules Grid/List */}
-          {modulesLoading ? (
+          {(showDeleted ? deletedModulesLoading : modulesLoading) ? (
             <div className="text-center py-12">
-              <LoadingSpinner size="lg" text="Loading modules..." />
+              <LoadingSpinner size="lg" text={`Loading ${showDeleted ? 'deleted' : ''} modules...`} />
             </div>
           ) : filteredModules.length > 0 ? (
             <motion.div
@@ -274,19 +341,35 @@ function ModulesPageContent() {
                             <div className="flex items-center space-x-2">
                               <BookOpen className="h-5 w-5 text-primary flex-shrink-0" />
                               {module.creator?.id === user?.id && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => handleDeleteModule(e, module.id)}
-                                  className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
-                                  disabled={deleteModuleMutation.isPending}
-                                >
-                                  {deleteModuleMutation.isPending && deleteModuleMutation.variables === module.id ? (
-                                    <div className="animate-spin rounded-full h-3 w-3 border-b border-current" />
-                                  ) : (
-                                    <Trash2 className="h-3 w-3" />
-                                  )}
-                                </Button>
+                                showDeleted ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => handleRestoreModule(e, module.id)}
+                                    className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary cursor-pointer"
+                                    disabled={restoreModuleMutation.isPending}
+                                  >
+                                    {restoreModuleMutation.isPending && restoreModuleMutation.variables === module.id ? (
+                                      <div className="animate-spin rounded-full h-3 w-3 border-b border-current" />
+                                    ) : (
+                                      <RotateCcw className="h-3 w-3" />
+                                    )}
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => handleDeleteModule(e, module.id)}
+                                    className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+                                    disabled={deleteModuleMutation.isPending}
+                                  >
+                                    {deleteModuleMutation.isPending && deleteModuleMutation.variables === module.id ? (
+                                      <div className="animate-spin rounded-full h-3 w-3 border-b border-current" />
+                                    ) : (
+                                      <Trash2 className="h-3 w-3" />
+                                    )}
+                                  </Button>
+                                )
                               )}
                             </div>
                           </div>
@@ -376,21 +459,32 @@ function ModulesPageContent() {
             >
               <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">
-                {searchQuery ? 'No modules found' : 'No modules yet'}
+                {showDeleted 
+                  ? (searchQuery ? 'No deleted modules found' : 'No deleted modules')
+                  : (searchQuery ? 'No modules found' : 'No modules yet')
+                }
               </h3>
               <p className="text-muted-foreground mb-6">
-                {searchQuery 
-                  ? 'Try adjusting your search terms or create a new module'
-                  : 'Create your first learning module to get started'
+                {showDeleted
+                  ? (searchQuery 
+                      ? 'Try adjusting your search terms'
+                      : 'Modules you delete will appear here for restoration'
+                    )
+                  : (searchQuery 
+                      ? 'Try adjusting your search terms or create a new module'
+                      : 'Create your first learning module to get started'
+                    )
                 }
               </p>
-              <Button
-                onClick={() => setShowCreateForm(true)}
-                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-              >
-                <Sparkles className="mr-2 h-4 w-4" />
-                Create Your First Module
-              </Button>
+              {!showDeleted && (
+                <Button
+                  onClick={() => setShowCreateForm(true)}
+                  className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 cursor-pointer"
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Create Your First Module
+                </Button>
+              )}
             </motion.div>
           )}
         </div>
@@ -402,6 +496,19 @@ function ModulesPageContent() {
           <CreateModuleForm onClose={() => setShowCreateForm(false)} />
         )}
       </AnimatePresence>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+        variant={modalState.variant}
+        isLoading={deleteModuleMutation.isPending || restoreModuleMutation.isPending}
+      />
     </div>
   )
 }
@@ -409,7 +516,7 @@ function ModulesPageContent() {
 export default function ModulesPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           <div className="text-muted-foreground">Loading modules...</div>

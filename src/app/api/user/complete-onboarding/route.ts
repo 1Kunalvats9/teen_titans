@@ -11,11 +11,21 @@ export async function POST(req: Request) {
 
     const { persona, imageUrl } = await req.json()
 
+    // Validate persona
+    if (!persona) {
+      return NextResponse.json({ error: 'Persona is required' }, { status: 400 })
+    }
+
+    // Validate image URL if provided
+    if (imageUrl && !imageUrl.startsWith('http')) {
+      return NextResponse.json({ error: 'Invalid image URL format' }, { status: 400 })
+    }
+
     await prisma.user.update({
       where: { id: session.user.id },
       data: {
-        persona: persona ?? undefined,
-        image: imageUrl ?? undefined,
+        persona: persona,
+        image: imageUrl || undefined,
         isOnboarded: true,
       },
       select: { id: true, persona: true, image: true, isOnboarded: true },

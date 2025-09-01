@@ -26,13 +26,30 @@ export async function GET(_request: NextRequest) {
       )
     }
 
-    // Fetch all public modules and user's own modules
+    // Get modules that the user has marked as deleted
+    const deletedModuleIds = await prisma.userModule.findMany({
+      where: {
+        userId: user.id,
+        deleted: true
+      },
+      select: {
+        moduleId: true
+      }
+    })
+
+    const deletedModuleIdSet = new Set(deletedModuleIds.map(d => d.moduleId))
+
+    // Fetch all public modules and user's own modules, excluding deleted ones
     const modules = await prisma.module.findMany({
       where: {
         OR: [
           { isPublic: true },
           { creatorId: user.id }
-        ]
+        ],
+        // Exclude modules that the user has marked as deleted
+        id: {
+          notIn: Array.from(deletedModuleIdSet)
+        }
       },
       include: {
         creator: {

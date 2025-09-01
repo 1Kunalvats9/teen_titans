@@ -51,12 +51,23 @@ export function ProfilePictureModal({ isOpen, onClose, onSuccess }: ProfilePictu
     setError(null)
 
     try {
-      const formData = new FormData()
-      formData.append('image', selectedFile)
+      // Convert file to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = reject
+        reader.readAsDataURL(selectedFile)
+      })
 
       const response = await fetch('/api/user/profile-image', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          file: base64,
+          folder: 'teen_titans/profile_images'
+        }),
       })
 
       if (!response.ok) {
@@ -65,7 +76,7 @@ export function ProfilePictureModal({ isOpen, onClose, onSuccess }: ProfilePictu
       }
 
       const data = await response.json()
-      onSuccess(data.imageUrl)
+      onSuccess(data.data.imageUrl)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload image')

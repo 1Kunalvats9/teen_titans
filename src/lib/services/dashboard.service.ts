@@ -32,13 +32,7 @@ export interface RecentActivity {
   icon: string
 }
 
-export interface AIConversation {
-  id: string
-  title: string
-  lastMessage: string
-  timestamp: Date
-  messageCount: number
-}
+
 
 export interface TodaysGoal {
   id: string
@@ -72,13 +66,7 @@ export const dashboardService = {
     return response.data.data
   },
 
-  // Get AI conversations
-  async getAIConversations(): Promise<AIConversation[]> {
-    const response = await api.get<ApiResponse<AIConversation[]>>(
-      API_ENDPOINTS.DASHBOARD.AI_CONVERSATIONS
-    )
-    return response.data.data
-  },
+
 
   // Get today's goals
   async getTodaysGoals(): Promise<TodaysGoal[]> {
@@ -90,11 +78,10 @@ export const dashboardService = {
 
   // Get all dashboard data at once
   async getAllDashboardData() {
-    const [stats, modules, activity, conversations, goals] = await Promise.all([
+    const [stats, modules, activity, goals] = await Promise.all([
       this.getStats(),
       this.getModules(),
       this.getRecentActivity(),
-      this.getAIConversations(),
       this.getTodaysGoals(),
     ])
 
@@ -102,7 +89,6 @@ export const dashboardService = {
       stats,
       modules,
       activity,
-      conversations,
       goals,
     }
   },

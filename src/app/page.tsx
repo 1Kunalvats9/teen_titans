@@ -1,96 +1,50 @@
-// src/app/page.tsx
-'use client';
-
-import { useEffect, useRef } from 'react';
-import { motion, Variants } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
-import Features  from "@/components/ui/Features"
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
-import Link from 'next/link';
-import HeroGridSection from '@/components/ui/HeroGridSection';
-gsap.registerPlugin(ScrollTrigger);
+import { HeroSection } from "@/components/hero-section"
+import { DashboardPreview } from "@/components/dashboard-preview"
+import { BentoSection } from "@/components/bento-section"
+import { LargeTestimonial } from "@/components/large-testimonial"
+import { TestimonialGridSection } from "@/components/testimonial-grid-section"
+import { FAQSection } from "@/components/faq-section"
+import { CTASection } from "@/components/cta-section"
+import { AnimatedSection } from "@/components/animated-section"
 
 export default function LandingPage() {
-  const heroRef = useRef<HTMLDivElement | null>(null);
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
-      },
-    },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.5, ease: 'easeInOut' },
-    },
-  };
-
-  useEffect(() => {
-    if (!heroRef.current) return;
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        '.hero-heading',
-        { opacity: 0, y: 28 },
-        { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' }
-      );
-      gsap.fromTo(
-        '.hero-subtext',
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', delay: 0.1 }
-      );
-      gsap.fromTo(
-        '.hero-cta',
-        { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', delay: 0.2 }
-      );
-    }, heroRef);
-    return () => ctx.revert();
-  }, []);
-
-  // Lenis smooth scroll for home page only
-  useEffect(() => {
-    const lenis = new Lenis({
-      autoRaf: false,
-      wheelMultiplier: 1.3,
-      touchMultiplier: 1.5,
-      smoothWheel: true,
-    });
-
-    // If using ScrollTrigger, update it on scroll
-    const onScroll = () => {
-      if (ScrollTrigger) {
-        ScrollTrigger.update();
-      }
-    };
-    lenis.on('scroll', onScroll);
-
-    let rafId: number;
-    const raf = (time: number) => {
-      lenis.raf(time);
-      rafId = requestAnimationFrame(raf);
-    };
-    rafId = requestAnimationFrame(raf);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      lenis.off?.('scroll', onScroll);
-      lenis.destroy();
-    };
-  }, []);
-
   return (
-    <main className="bg-background text-foreground min-h-screen">
-      <HeroGridSection />
-      <Features />
-    </main>
-  );
+    <div className="min-h-screen bg-background relative overflow-hidden pb-0">
+      <div className="relative z-10">
+        <main className="w-full mx-auto relative">
+          <HeroSection />
+          {/* Dashboard Preview Wrapper */}
+          <div className="absolute bottom-[-150px] md:bottom-[-400px] left-1/2 transform -translate-x-1/2 z-30">
+            <AnimatedSection>
+              <DashboardPreview />
+            </AnimatedSection>
+          </div>
+        </main>
+        <div className="max-w-[1320px] mx-auto px-6">
+          <AnimatedSection className="relative z-10 mt-[411px] md:mt-[400px]" delay={0.1}>
+            <h1></h1>
+          </AnimatedSection>
+          <AnimatedSection id="features-section" className="relative z-10 mt-16" delay={0.2}>
+            <BentoSection />
+          </AnimatedSection>
+          <AnimatedSection className="relative z-10 mt-8 md:mt-16" delay={0.2}>
+            <LargeTestimonial />
+          </AnimatedSection>
+          <AnimatedSection
+            id="testimonials-section"
+            className="relative z-10 mt-8 md:mt-16"
+            delay={0.2}
+          >
+            <TestimonialGridSection />
+          </AnimatedSection>
+          <AnimatedSection id="faq-section" className="relative z-10 mt-8 md:mt-16" delay={0.2}>
+            <FAQSection />
+          </AnimatedSection>
+          <AnimatedSection className="relative z-10 mt-8 md:mt-16" delay={0.2}>
+            <CTASection />
+          </AnimatedSection>
+        </div>
+      </div>
+    </div>
+  )
 }

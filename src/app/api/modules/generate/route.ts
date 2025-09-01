@@ -296,11 +296,15 @@ Requirements:
 - Include "Summary:" sections at the end of each step
 - Use bullet points and numbered lists for better organization
 - Include code examples if relevant with proper formatting:
-  * Use \`\`\`language for code blocks (e.g., \`\`\`javascript, \`\`\`python, \`\`\`html)
-  * Include proper indentation with spaces (2-4 spaces per level)
-  * Add line breaks (\n) for readability
-  * Use descriptive variable names and comments
+  * Use \`\`\`language for code blocks (e.g., \`\`\`javascript, \`\`\`python, \`\`\`html, \`\`\`css, \`\`\`typescript, \`\`\`jsx, \`\`\`tsx)
+  * ALWAYS use proper indentation with 2 spaces per level
+  * ALWAYS add proper line breaks (\n) for readability
+  * Use descriptive variable names and add helpful comments
   * Show both simple and complex examples
+  * Ensure code is properly formatted with consistent spacing
+  * Include proper semicolons and brackets where appropriate
+  * Use meaningful function and variable names
+  * Add comments to explain complex logic
 - Make content comprehensive but digestible
 - Use analogies and metaphors to explain complex concepts
 - Include interactive elements like "Try this:" suggestions
@@ -340,7 +344,7 @@ Return ONLY the JSON array, no other text, no markdown formatting.
     // Fallback: generate basic content for each step
     steps = outline.map((item: { title: string; description: string }, index: number) => ({
       title: item.title,
-      content: `## Introduction to ${item.title}\n\nWelcome to step ${index + 1} of ${outline.length} in your journey to master ${topic}.\n\n${item.description}\n\n## Key Concepts\n\n- Understanding the fundamentals of ${item.title.toLowerCase()}\n- Practical applications in real-world scenarios\n- Best practices and industry standards\n- Common patterns and techniques\n\n## Example\n\nHere's a practical example to help you understand ${item.title.toLowerCase()} better:\n\n\`\`\`javascript\n// Example code demonstration\nfunction demonstrate${item.title.replace(/\s+/g, '')}() {\n  // This is a basic example\n  const example = "Hello, World!";\n  console.log(example);\n  \n  // More advanced usage\n  const advanced = {\n    concept: "${item.title}",\n    level: "beginner",\n    description: "${item.description}"\n  };\n  \n  return advanced;\n}\n\`\`\`\n\n## Tip\n\nPro tip: Start with the basics and gradually build up your understanding. Practice regularly to reinforce your learning.\n\n## Summary\n\nIn this step, you've learned the essential aspects of ${item.title.toLowerCase()}. Remember to practice and apply these concepts in your own projects.`
+      content: `## Introduction to ${item.title}\n\nWelcome to step ${index + 1} of ${outline.length} in your journey to master ${topic}.\n\n${item.description}\n\n## Key Concepts\n\n- Understanding the fundamentals of ${item.title.toLowerCase()}\n- Practical applications in real-world scenarios\n- Best practices and industry standards\n- Common patterns and techniques\n\n## Example\n\nHere's a practical example to help you understand ${item.title.toLowerCase()} better:\n\n\`\`\`javascript\n// Example code demonstration\nfunction demonstrate${item.title.replace(/\s+/g, '')}() {\n  // This is a basic example with proper formatting\n  const example = "Hello, World!";\n  console.log(example);\n  \n  // More advanced usage with proper indentation\n  const advanced = {\n    concept: "${item.title}",\n    level: "beginner",\n    description: "${item.description}",\n    features: [\n      "Proper indentation",\n      "Clear variable names",\n      "Helpful comments"\n    ]\n  };\n  \n  // Return the result\n  return advanced;\n}\n\n// Usage example\nconst result = demonstrate${item.title.replace(/\s+/g, '')}();\nconsole.log("Result:", result);\n\`\`\`\n\n## Tip\n\nPro tip: Start with the basics and gradually build up your understanding. Practice regularly to reinforce your learning.\n\n## Summary\n\nIn this step, you've learned the essential aspects of ${item.title.toLowerCase()}. Remember to practice and apply these concepts in your own projects.`
     }))
   }
 

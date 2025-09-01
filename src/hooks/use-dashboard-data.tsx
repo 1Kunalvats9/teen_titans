@@ -34,13 +34,7 @@ export interface RecentActivity {
   icon: string
 }
 
-export interface AIConversation {
-  id: string
-  title: string
-  lastMessage: string
-  timestamp: Date
-  messageCount: number
-}
+
 
 export interface TodaysGoal {
   id: string
@@ -52,7 +46,7 @@ type DashboardDataContextType = {
   stats: DashboardStats | null
   modules: LearningModule[]
   recentActivity: RecentActivity[]
-  aiConversations: AIConversation[]
+
   goals: TodaysGoal[]
   isLoading: boolean
   error: string | null
@@ -66,7 +60,7 @@ export function DashboardDataProvider({ children }: { children: React.ReactNode 
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [modules, setModules] = useState<LearningModule[]>([])
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
-  const [aiConversations, setAiConversations] = useState<AIConversation[]>([])
+
   const [goals, setGoals] = useState<TodaysGoal[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -95,7 +89,7 @@ export function DashboardDataProvider({ children }: { children: React.ReactNode 
       if (statsRes.ok) setStats(await statsRes.json())
       if (modulesRes.ok) setModules(await modulesRes.json())
       if (activityRes.ok) setRecentActivity(await activityRes.json())
-      if (conversationsRes.ok) setAiConversations(await conversationsRes.json())
+  
       if (goalsRes.ok) setGoals(await goalsRes.json())
     } catch (err) {
       setError('Failed to load dashboard data')
@@ -116,7 +110,7 @@ export function DashboardDataProvider({ children }: { children: React.ReactNode 
         setStats(null)
         setModules([])
         setRecentActivity([])
-        setAiConversations([])
+  
         setGoals([])
         setError(null)
       }
@@ -138,12 +132,12 @@ export function DashboardDataProvider({ children }: { children: React.ReactNode 
     stats,
     modules,
     recentActivity,
-    aiConversations,
+    
     goals,
     isLoading,
     error,
     refreshData
-  }), [stats, modules, recentActivity, aiConversations, goals, isLoading, error, refreshData])
+  }), [stats, modules, recentActivity, goals, isLoading, error, refreshData])
 
   return (
     <DashboardDataContext.Provider value={value}>

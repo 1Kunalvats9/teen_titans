@@ -8,6 +8,9 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from "sonner";
+import { UniversalLoader } from "@/components/ui/universal-loader";
+import { FloatingChatbotButton } from "@/components/chatbot/FloatingChatbotButton";
+import { ConditionalPadding } from "@/components/ui/conditional-padding";
 
 export default function RootLayout({
   children,
@@ -22,24 +25,30 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                const theme = localStorage.getItem('app-theme') || 'light';
+                const theme = localStorage.getItem('app-theme') || 'dark';
                 document.documentElement.classList.toggle('dark', theme === 'dark');
+                document.documentElement.classList.toggle('light', theme === 'light');
               } catch (e) {}
             `,
           }}
         />
       </head>
-      <body>
+      <body className="min-h-screen flex flex-col">
         <ThemeProvider>
           <QueryProvider>
             <AuthProvider>
               <AppAuthProvider>
-                <OnboardingProvider>
-                  <Navbar />
-                  {children}
-                  <Toaster />
-                  <Footer />
-                </OnboardingProvider>
+                <UniversalLoader>
+                  <OnboardingProvider>
+                    <Navbar />
+                    <ConditionalPadding>
+                      {children}
+                    </ConditionalPadding>
+                    <FloatingChatbotButton />
+                    <Toaster />
+                    <Footer />
+                  </OnboardingProvider>
+                </UniversalLoader>
               </AppAuthProvider>
             </AuthProvider>
           </QueryProvider>

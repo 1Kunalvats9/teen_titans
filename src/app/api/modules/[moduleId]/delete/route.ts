@@ -45,11 +45,23 @@ export async function DELETE(
       )
     }
 
-    // Instead of deleting, we'll mark it as not public (soft delete)
-    // This keeps it in the database but removes it from user's dashboard
-    const updatedModule = await prisma.module.update({
-      where: { id: moduleId },
-      data: { isPublic: false }
+    // Mark the module as deleted for this specific user
+    // This keeps the module in the database for other users but hides it from the creator
+    await prisma.userModule.upsert({
+      where: {
+        userId_moduleId: {
+          userId: user.id,
+          moduleId: moduleId
+        }
+      },
+      update: {
+        deleted: true
+      },
+      create: {
+        userId: user.id,
+        moduleId: moduleId,
+        deleted: true
+      }
     })
 
     return NextResponse.json({ 

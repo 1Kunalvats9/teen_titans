@@ -17,7 +17,7 @@ export async function GET() {
       include: {
         messages: {
           orderBy: { createdAt: 'desc' },
-          take: 1 // Get only the last message
+          take: 1
         },
         _count: {
           select: { messages: true }

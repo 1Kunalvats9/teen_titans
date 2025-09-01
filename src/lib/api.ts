@@ -6,7 +6,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
 // Create axios instance with default config
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 140000, // 2 minutes timeout
   headers: {
     'Content-Type': 'application/json',
   },
@@ -30,8 +30,9 @@ api.interceptors.response.use(
   },
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized access
-      window.location.href = '/login'
+      // Handle unauthorized access - don't redirect automatically
+      // Let the auth context handle it
+      console.log('Unauthorized access detected')
     }
     return Promise.reject(error)
   }
@@ -77,7 +78,7 @@ export const API_ENDPOINTS = {
     STATS: '/api/dashboard/stats',
     MODULES: '/api/dashboard/modules',
     RECENT_ACTIVITY: '/api/dashboard/recent-activity',
-    AI_CONVERSATIONS: '/api/dashboard/ai-conversations',
+  
     TODAYS_GOALS: '/api/dashboard/todays-goals',
   },
   
@@ -86,5 +87,14 @@ export const API_ENDPOINTS = {
     PROFILE: '/api/user/profile',
     UPDATE_PROFILE: '/api/user/profile',
     STATUS: '/api/user/status',
+  },
+
+  // Modules
+  MODULES: {
+    ALL: '/api/modules',
+    DETAIL: (id: string) => `/api/modules/${id}`,
+    CREATE: '/api/modules/generate',
+    DELETE: (id: string) => `/api/modules/${id}/delete`,
+    DEBUG: '/api/modules/debug',
   },
 } as const

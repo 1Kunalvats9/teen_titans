@@ -16,8 +16,9 @@ export async function GET() {
       userModules,
       createdModules,
       quizAttempts,
-      totalStudyTime,
-      weeklyProgress
+      studySessions,
+      weeklyProgress,
+      user
     ] = await Promise.all([
       // Get module progress (modules user has started)
       prisma.userModule.findMany({
@@ -39,8 +40,11 @@ export async function GET() {
         include: { quiz: true }
       }).catch(() => []), // Return empty array if query fails
       
-      // Calculate total study time (placeholder - you can implement actual tracking)
-      Promise.resolve(0),
+      // Get study sessions
+      prisma.studySession.findMany({
+        where: { userId: session.user.id },
+        orderBy: { startTime: 'desc' }
+      }).catch(() => []), // Return empty array if query fails
       
       // Calculate weekly progress
       prisma.quizAttempt.findMany({
@@ -50,7 +54,13 @@ export async function GET() {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
           }
         }
-      }).catch(() => []) // Return empty array if query fails
+      }).catch(() => []), // Return empty array if query fails
+      
+      // Get user data for streak
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { streak: true }
+      }).catch(() => ({ streak: 0 }))
     ])
 
     const completedModules = userModules.filter(um => um.completed).length
@@ -59,14 +69,27 @@ export async function GET() {
       ? quizAttempts.reduce((sum, attempt) => sum + attempt.score, 0) / quizAttempts.length
       : 0
 
-    // Calculate study streak (placeholder - implement actual streak logic)
-    const studyStreak = 0 // Start with 0 for new users
+    // Calculate total study time from study sessions
+    const totalStudyTime = studySessions.reduce((total, session) => {
+      if (session.duration) {
+        return total + session.duration
+      }
+      // If no duration recorded, calculate from start/end time
+      if (session.startTime && session.endTime) {
+        const duration = Math.round((session.endTime.getTime() - session.startTime.getTime()) / (1000 * 60))
+        return total + duration
+      }
+      return total
+    }, 0)
+
+    // Calculate study streak (use user's streak from database)
+    const studyStreak = user?.streak || 0
 
     const stats = {
       totalModules,
       completedModules,
       totalQuizzes: quizAttempts.length,
-      averageScore: Math.round(averageScore * 100) / 100,
+      averageScore: Math.round(averageScore),
       studyStreak,
       totalStudyTime,
       weeklyProgress: weeklyProgress.length
