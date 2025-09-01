@@ -63,6 +63,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
         if (session?.user) {
           const sessionUser = session.user as any
+          console.log('Session user data:', sessionUser)
           const newUser = {
             id: sessionUser.id || '',
             name: sessionUser.name,
@@ -75,6 +76,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
             streak: sessionUser.streak ?? 0,
           }
           
+          console.log('Setting user state to:', newUser)
           setUser(newUser)
 
           // Check if user is onboarded
@@ -165,16 +167,47 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [update])
 
+  const refreshUserData = useCallback(async () => {
+    try {
+      console.log('Refreshing user data...')
+      // Force a complete session refresh to get the latest user data
+      await update()
+      console.log('First update completed')
+      
+      // Also trigger a router refresh to ensure all components get the latest data
+      router.refresh()
+      console.log('Router refresh triggered')
+      
+      // Add a small delay to ensure the session update has propagated
+      await new Promise(resolve => setTimeout(resolve, 100))
+      console.log('Delay completed')
+      
+      // Force another update to ensure we have the latest data
+      await update()
+      console.log('Second update completed')
+    } catch (error) {
+      console.error('Refresh user data error:', error)
+    }
+  }, [update, router])
+
   const completeOnboarding = useCallback(async (payload: { persona?: Persona | string; imageUrl?: string }) => {
     try {
+      console.log('Starting onboarding completion with payload:', payload)
       const cleanPayload = {
         persona: payload.persona || undefined,
         imageUrl: payload.imageUrl
       }
       const result = await apiService.auth.completeOnboarding(cleanPayload)
       if (result.success) {
-        // Refresh user data
+        console.log('Onboarding API call successful, refreshing user data...')
+        // Refresh user data and wait for it to complete
         await refreshUserData()
+        
+        console.log('User data refreshed, waiting for session update...')
+        // Add a small delay to ensure the session is fully updated
+        await new Promise(resolve => setTimeout(resolve, 200))
+        
+        console.log('Redirecting to dashboard...')
         router.push('/dashboard')
         return { success: true }
       } else {
@@ -184,15 +217,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Complete onboarding error:', error)
       return { success: false, message: 'Failed to complete onboarding' }
     }
-  }, [router])
-
-  const refreshUserData = useCallback(async () => {
-    try {
-      await update()
-    } catch (error) {
-      console.error('Refresh user data error:', error)
-    }
-  }, [update])
+  }, [router, refreshUserData])
 
   const value = useMemo<AuthContextType>(() => ({
     user,

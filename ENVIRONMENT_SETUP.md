@@ -1,4 +1,4 @@
-# Environment Setup Guide for Chatbot with Google Cloud Vision API
+# Environment Setup Guide for Teen Titans Learning Platform
 
 ## Required Environment Variables
 
@@ -10,6 +10,12 @@ GOOGLE_AI_API_KEY=your_gemini_api_key_here
 
 # Google Cloud Vision API Credentials (File path - RECOMMENDED)
 GOOGLE_APPLICATION_CREDENTIALS=./credentials/google-credentials.json
+
+# Cloudinary Configuration (for profile image uploads)
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+CLOUDINARY_UNSIGNED_PRESET=your_upload_preset_name
 ```
 
 ## Setup Instructions
@@ -64,7 +70,27 @@ GOOGLE_APPLICATION_CREDENTIALS=./credentials/google-credentials.json
    GOOGLE_AI_API_KEY=your_gemini_api_key_here
    ```
 
-### 3. Security Setup
+### 3. Cloudinary Setup (for Profile Images)
+
+1. **Create Cloudinary Account**
+   - Go to [Cloudinary](https://cloudinary.com/) and sign up
+   - Get your cloud name, API key, and API secret from the dashboard
+
+2. **Create Upload Preset (Optional but Recommended)**
+   - Go to Settings > Upload
+   - Create a new upload preset
+   - Set it as "unsigned" for better security
+   - Note the preset name
+
+3. **Set up Environment Variables**
+   ```env
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
+   CLOUDINARY_UNSIGNED_PRESET=your_preset_name
+   ```
+
+### 4. Security Setup
 
 1. **Add to .gitignore**
    ```bash
@@ -78,7 +104,7 @@ GOOGLE_APPLICATION_CREDENTIALS=./credentials/google-credentials.json
    ls -la credentials/google-credentials.json
    ```
 
-### 4. Testing the Setup
+### 5. Testing the Setup
 
 1. **Test the APIs**
    - Visit `/api/chatbot/test` in your browser
@@ -90,8 +116,15 @@ GOOGLE_APPLICATION_CREDENTIALS=./credentials/google-credentials.json
    - Check the browser console for logs
    - Verify that text is extracted and processed
 
+3. **Test Profile Image Upload**
+   - Complete the onboarding process
+   - Upload a profile image during onboarding
+   - Verify the image appears on the dashboard
+   - Check that the image URL is saved in the database
+
 ## How It Works
 
+### Chatbot Workflow
 The chatbot now follows this workflow:
 
 1. **Image Upload**: User uploads an image
@@ -99,6 +132,15 @@ The chatbot now follows this workflow:
 3. **Text Processing**: Extracted text is sent to Gemini AI with context
 4. **Response Generation**: Gemini AI generates a natural, conversational response
 5. **Display**: Clean, formatted response is shown to the user
+
+### Profile Image Workflow
+The profile image system follows this workflow:
+
+1. **Image Selection**: User selects or drags & drops an image during onboarding
+2. **Image Preview**: Image is previewed before upload
+3. **Cloudinary Upload**: Image is converted to base64 and uploaded to Cloudinary
+4. **Database Storage**: Cloudinary URL is saved to the user's profile in the database
+5. **Dashboard Display**: Profile image is displayed on the dashboard and throughout the app
 
 ### Key Features:
 - **OCR Text Extraction**: Uses Google Cloud Vision API for accurate text detection
@@ -137,6 +179,13 @@ The chatbot now follows this workflow:
    - Ensure the image contains clear, readable text
    - Check that the text is not too small or blurry
    - Verify the image quality is good enough for OCR
+
+6. **Profile Image Upload Issues**
+   - Check if Cloudinary environment variables are properly set
+   - Verify the image format is supported (JPG, PNG, GIF)
+   - Ensure the image size is under 5MB
+   - Check server logs for Cloudinary upload errors
+   - Verify your Cloudinary account has sufficient upload credits
 
 ### Debug Information
 

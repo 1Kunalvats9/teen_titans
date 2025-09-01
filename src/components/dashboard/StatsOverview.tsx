@@ -92,12 +92,19 @@ export function StatsOverview() {
     
     const currentScore = dashboardStats.averageScore || 0
     const completedModules = dashboardStats.completedModules || 0
-    const totalModules = dashboardStats.totalModules || 1
     const totalQuizzes = dashboardStats.totalQuizzes || 0
+    
+    // For new users with no activity, show flat line at 0
+    if (completedModules === 0 && totalQuizzes === 0) {
+      return Array(7).fill(0).map((_, i) => ({
+        period: i === 0 ? 'Start' : i === 6 ? 'Current' : `Week ${i + 1}`,
+        score: 0
+      }))
+    }
     
     // Create realistic progression based on actual data
     const data = []
-    const baseScore = Math.max(50, currentScore - 20) // Start from a reasonable base
+    const baseScore = Math.max(0, currentScore - 20) // Start from 0 or reasonable base
     
     // Generate 7 data points showing progression
     for (let i = 0; i < 7; i++) {

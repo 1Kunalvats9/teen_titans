@@ -19,6 +19,9 @@ const DashboardContent = memo(function DashboardContent() {
   const { error } = useAllDashboardData()
   const router = useRouter()
 
+  // Debug log to see what user data we're getting
+  console.log('Dashboard rendering with user:', user)
+
   useEffect(() => {
     // Only redirect if we're not loading and there's no user
     if (!isLoading && !user) {

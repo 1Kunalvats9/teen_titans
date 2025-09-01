@@ -8,11 +8,6 @@ import { Menu } from "lucide-react"
 import Link from "next/link" // Import Link for client-side navigation
 
 export function Header() {
-  const navItems = [
-    { name: "Features", href: "#features-section" },
-    { name: "Pricing", href: "#pricing-section" },
-    { name: "Testimonials", href: "#testimonials-section" }, // Changed from Docs to Testimonials
-  ]
 
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault()
@@ -31,16 +26,6 @@ export function Header() {
             <span className="text-foreground text-xl font-semibold">Pointer</span>
           </div>
           <nav className="hidden md:flex items-center gap-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={(e) => handleScroll(e, item.href)} // Add onClick handler
-                className="text-[#888888] hover:text-foreground px-4 py-2 rounded-full font-medium transition-colors"
-              >
-                {item.name}
-              </Link>
-            ))}
           </nav>
         </div>
         <div className="flex items-center gap-4">
@@ -61,16 +46,6 @@ export function Header() {
                 <SheetTitle className="text-left text-xl font-semibold text-foreground">Navigation</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-4 mt-6">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={(e) => handleScroll(e, item.href)} // Add onClick handler
-                    className="text-[#888888] hover:text-foreground justify-start text-lg py-2"
-                  >
-                    {item.name}
-                  </Link>
-                ))}
                 <Link href="https://vercel.com/home" target="_blank" rel="noopener noreferrer" className="w-full mt-4">
                   <Button className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-6 py-2 rounded-full font-medium shadow-sm">
                     Try for Free

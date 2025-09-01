@@ -94,8 +94,8 @@ export const authOptions = {
         return token
       }
 
-      // Only re-sync critical fields from DB if they're missing or if we need to update specific fields
-      if (token?.id && (!token.name || !token.email || token.isOnboarded === undefined)) {
+      // Re-sync user data from DB to ensure we have the latest information
+      if (token?.id) {
         try {
           const dbUser = await prisma.user.findUnique({ 
             where: { id: token.id as string },
@@ -109,6 +109,7 @@ export const authOptions = {
             }
           })
           if (dbUser) {
+            // Always update with the latest data from database
             token.name = dbUser.name
             token.email = dbUser.email
             token.image = dbUser.image
