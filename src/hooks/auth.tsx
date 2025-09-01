@@ -84,9 +84,9 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
           console.log('Auth hook - user onboarded:', isOnboarded, 'pathname:', pathname)
           
           // Only redirect if user is not onboarded and not already on onboarding page
-          if (!isOnboarded && !pathname.includes('/onboarding')) {
-            console.log('Redirecting to onboarding - user not onboarded')
-            router.push('/onboarding')
+          if (!isOnboarded) {
+            console.log('User not onboarded - OnboardingProvider will show modal')
+            // No need to redirect since OnboardingProvider will show the modal
           }
         } else {
           setUser(null)

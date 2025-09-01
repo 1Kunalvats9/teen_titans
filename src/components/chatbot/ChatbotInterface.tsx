@@ -55,6 +55,7 @@ export function ChatbotInterface({ user }: ChatbotInterfaceProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -216,86 +217,120 @@ export function ChatbotInterface({ user }: ChatbotInterfaceProps) {
     )
   }
 
+  const handleScroll = () => {
+    if (scrollAreaRef.current) {
+      const isAtBottom = scrollAreaRef.current.scrollTop + scrollAreaRef.current.clientHeight >= scrollAreaRef.current.scrollHeight - 100; // 100px buffer
+      setIsAtBottom(isAtBottom);
+    }
+  };
+
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    }
+  };
+
+  const [isAtBottom, setIsAtBottom] = useState(true);
+
+  useEffect(() => {
+    const updateIsAtBottom = () => {
+      if (scrollAreaRef.current) {
+        const isAtBottom = scrollAreaRef.current.scrollTop + scrollAreaRef.current.clientHeight >= scrollAreaRef.current.scrollHeight - 100; // 100px buffer
+        setIsAtBottom(isAtBottom);
+      }
+    };
+
+    updateIsAtBottom(); // Set initial value
+    scrollAreaRef.current?.addEventListener('scroll', updateIsAtBottom);
+    return () => scrollAreaRef.current?.removeEventListener('scroll', updateIsAtBottom);
+  }, []);
+
   return (
     <div className="flex flex-col h-[calc(100vh-280px)] max-w-4xl mx-auto">
       {/* Messages Area - Centered and Scrollable */}
-      <div className="flex-1 overflow-hidden rounded-lg border border-border/50 bg-background/50 backdrop-blur-sm">
-        <ScrollArea className="h-full">
+      <div className="flex-1 overflow-hidden rounded-lg border border-border/50 bg-background/50 backdrop-blur-sm relative">
+        <ScrollArea className="h-full" onScroll={handleScroll}>
           <div className="p-6 space-y-6" ref={scrollAreaRef}>
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={cn(
-                  "flex gap-4",
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
+                  "flex gap-3",
+                  message.role === 'user' ? 'flex-row-reverse' : ''
                 )}
               >
-                {message.role === 'assistant' && (
-                  <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
-                    <AvatarImage src="/bot-avatar.png" />
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white text-xs">
-                      <Bot className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                
-                <div className={cn(
-                  "max-w-[85%] space-y-2",
-                  message.role === 'user' ? 'order-1' : 'order-2'
-                )}>
-                  <div className={cn(
-                    "rounded-2xl px-4 py-3 shadow-sm",
-                    message.role === 'user' 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-muted/50 text-foreground border border-border/30'
+                {/* Avatar */}
+                <Avatar className="w-8 h-8 shrink-0">
+                  <AvatarImage 
+                    src={message.role === 'user' ? user?.image : undefined} 
+                  />
+                  <AvatarFallback className={cn(
+                    "text-xs",
+                    message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground text-muted'
                   )}>
-                    {renderMessageContent(message)}
+                    {message.role === 'user' ? (user?.name?.[0] || 'U') : <Bot className="w-4 h-4" />}
+                  </AvatarFallback>
+                </Avatar>
+
+                {/* Message Content */}
+                <div className={cn(
+                  "max-w-[80%] rounded-2xl px-4 py-3 border",
+                  message.role === 'user' 
+                    ? 'bg-primary text-primary-foreground border-primary/30' 
+                    : 'bg-muted/50 border-border/30'
+                )}>
+                  {/* Image if present */}
+                  {message.imageUrl && (
+                    <div className="mb-3">
+                      <img 
+                        src={message.imageUrl} 
+                        alt="Question" 
+                        className="max-h-48 rounded-lg border border-border/50 shadow-sm"
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Message text */}
+                  <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                    {message.content}
                   </div>
                   
-                  <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-                    <span>{formatTimestamp(message.timestamp)}</span>
-                    <div className="flex items-center space-x-2">
-                      {message.toolUsed && (
-                        <Badge variant="outline" className="text-xs bg-background/50">
-                          {message.toolUsed === 'problem_solver' && <Calculator className="w-3 h-3 mr-1" />}
-                          {message.toolUsed === 'image_analyzer' && <Camera className="w-3 h-3 mr-1" />}
-                          {message.toolUsed === 'general_chat' && <Sparkles className="w-3 h-3 mr-1" />}
-                          {message.toolUsed.replace('_', ' ')}
-                        </Badge>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 hover:bg-muted/50"
-                        onClick={() => copyMessage(message.content, message.id)}
-                      >
-                        {copiedMessageId === message.id ? (
-                          <Check className="h-3 w-3" />
-                        ) : (
-                          <Copy className="h-3 w-3" />
-                        )}
-                      </Button>
-                    </div>
+                  {/* Timestamp and tool used */}
+                  <div className="flex items-center justify-between mt-2 text-xs opacity-70">
+                    <span>{message.timestamp.toLocaleTimeString()}</span>
+                    {message.toolUsed && (
+                      <div className="flex items-center gap-1">
+                        {message.toolUsed === 'calculator' && <Calculator className="w-3 h-3" />}
+                        {message.toolUsed === 'image_analysis' && <Camera className="w-3 h-3" />}
+                        {message.toolUsed === 'general_chat' && <Sparkles className="w-3 h-3" />}
+                        <span className="capitalize">{message.toolUsed.replace('_', ' ')}</span>
+                      </div>
+                    )}
                   </div>
+                  
+                  {/* Copy button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyMessage(message.content, message.id)}
+                    className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    {copiedMessageId === message.id ? (
+                      <Check className="w-3 h-3 text-green-500" />
+                    ) : (
+                      <Copy className="w-3 h-3" />
+                    )}
+                  </Button>
                 </div>
-
-                {message.role === 'user' && (
-                  <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
-                    <AvatarImage src={user.image || undefined} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs">
-                      <User className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
               </div>
             ))}
             
+            {/* Loading indicator */}
             {isLoading && (
-              <div className="flex gap-4 justify-start">
-                <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
-                  <AvatarImage src="/bot-avatar.png" />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white text-xs">
-                    <Bot className="h-4 w-4" />
+              <div className="flex gap-3">
+                <Avatar className="w-8 h-8 shrink-0">
+                  <AvatarFallback className="bg-muted-foreground text-muted">
+                    <Bot className="w-4 h-4" />
                   </AvatarFallback>
                 </Avatar>
                 <div className="bg-muted/50 rounded-2xl px-4 py-3 border border-border/30">
@@ -307,8 +342,23 @@ export function ChatbotInterface({ user }: ChatbotInterfaceProps) {
               </div>
             )}
             
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
+
+        {/* Scroll to Bottom Button */}
+        {!isAtBottom && (
+          <Button
+            onClick={scrollToBottom}
+            size="icon"
+            className="absolute bottom-4 right-4 z-20 h-10 w-10 rounded-full shadow-lg bg-primary hover:bg-primary/90"
+            title="Scroll to latest message"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </Button>
+        )}
       </div>
 
       {/* Input Area - Fixed at Bottom */}

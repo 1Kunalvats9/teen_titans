@@ -1,8 +1,12 @@
+'use client'
+
 import React from "react"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { useOnboarding } from "@/components/Providers/OnboardingProvider"
 
 export function HeroSection() {
+  const { showOnboarding } = useOnboarding()
+
   return (
     <section
       className="flex flex-col items-center text-center relative mx-auto rounded-2xl overflow-hidden my-6 py-0 px-4
@@ -440,11 +444,12 @@ export function HeroSection() {
         </p>
       </div>
 
-      <Link href="/onboarding" className="relative z-10">
-        <Button className="relative z-10 bg-secondary text-secondary-foreground hover:bg-secondary/90 px-8 py-3 rounded-full font-medium text-base shadow-lg ring-1 ring-white/10">
-          Get Started Free
-        </Button>
-      </Link>
+      <Button 
+        onClick={showOnboarding}
+        className="relative z-10 bg-secondary text-secondary-foreground hover:bg-secondary/90 px-8 py-3 rounded-full font-medium text-base shadow-lg ring-1 ring-white/10"
+      >
+        Get Started Free
+      </Button>
     </section>
   )
 }

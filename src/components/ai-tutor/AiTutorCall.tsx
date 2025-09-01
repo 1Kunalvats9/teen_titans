@@ -40,12 +40,32 @@ export const AiTutorCall: React.FC<AiTutorCallProps> = ({
   const [isAISpeaking, setIsAISpeaking] = useState(false)
   const [callDuration, setCallDuration] = useState(0)
   const durationRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  
+  // Time limit constants (1.2 minutes = 72 seconds)
+  const CALL_TIME_LIMIT = 72 // seconds
+  const WARNING_TIME = 60 // Show warning at 1 minute
 
   // Start call timer
   useEffect(() => {
     if (callStatus === 'active') {
       durationRef.current = setInterval(() => {
-        setCallDuration(prev => prev + 1)
+        setCallDuration(prev => {
+          const newDuration = prev + 1
+          
+          // Show warning at 1 minute
+          if (newDuration === WARNING_TIME) {
+            toast.warning('⚠️ 1 minute remaining. Call will end automatically in 12 seconds due to free tier limits.')
+          }
+          
+          // Auto-end call at time limit
+          if (newDuration >= CALL_TIME_LIMIT) {
+            handleEndCall()
+            toast.info('⏰ Call time limit reached (1.2 minutes). Due to limited free tokens, call limit is set to 1.2 minutes only.')
+            return CALL_TIME_LIMIT
+          }
+          
+          return newDuration
+        })
       }, 1000)
     } else {
       if (durationRef.current) {

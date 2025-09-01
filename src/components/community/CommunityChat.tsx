@@ -34,7 +34,10 @@ export function CommunityChat({ communityId }: CommunityChatProps) {
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [wsConnected, setWsConnected] = useState(false)
+  const [isAtBottom, setIsAtBottom] = useState(true)
+  const [unreadCount, setUnreadCount] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
@@ -48,9 +51,79 @@ export function CommunityChat({ communityId }: CommunityChatProps) {
     }
   }, [communityId])
 
+  // Scroll to bottom when messages are first loaded
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    if (messages.length > 0) {
+      scrollToBottomImmediate()
+    }
+  }, [messages.length === 0 ? null : messages.length]) // Only trigger on first load
+
+  useEffect(() => {
+    if (isAtBottom) {
+      scrollToBottom()
+      setUnreadCount(0) // Clear unread count when user is at bottom
+    }
+  }, [messages, isAtBottom])
+
+  // Check if user is at bottom of chat
+  const handleScroll = () => {
+    if (messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current
+      const threshold = 100 // Consider "at bottom" if within 100px of bottom
+      const atBottom = scrollHeight - scrollTop - clientHeight < threshold
+      setIsAtBottom(atBottom)
+      
+      // Clear unread count when user scrolls to bottom
+      if (atBottom) {
+        setUnreadCount(0)
+      }
+    }
+  }
+
+  // Enhanced scroll to bottom function
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'end',
+          inline: 'nearest'
+        })
+        setIsAtBottom(true)
+      }
+    }, 100) // Small delay to ensure DOM is updated
+  }
+
+  // Force scroll to bottom when new messages arrive
+  const scrollToBottomImmediate = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: 'auto', 
+        block: 'end',
+        inline: 'nearest'
+      })
+      setIsAtBottom(true)
+    }
+  }
+
+  // Enhanced message handling with better scroll control
+  const handleNewMessage = (message: Message) => {
+    setMessages(prev => {
+      const messageExists = prev.some(msg => msg.id === message.id);
+      if (!messageExists) {
+        const newMessages = [...prev, message];
+        // Only auto-scroll if user is at bottom
+        if (isAtBottom) {
+          setTimeout(() => scrollToBottomImmediate(), 50);
+        } else {
+          // Increment unread count if user is not at bottom
+          setUnreadCount(prev => prev + 1);
+        }
+        return newMessages;
+      }
+      return prev;
+    });
+  }
 
   const connectWebSocket = () => {
     console.log('Attempting to connect to WebSocket with communityId:', communityId, 'userId:', user?.id)
@@ -115,13 +188,7 @@ export function CommunityChat({ communityId }: CommunityChatProps) {
           
           if (data.type === 'message') {
             // Only add message if it's not from the current user (to avoid duplicates)
-            setMessages(prev => {
-              const messageExists = prev.some(msg => msg.id === data.message.id);
-              if (!messageExists) {
-                return [...prev, data.message];
-              }
-              return prev;
-            });
+            handleNewMessage(data.message);
           } else if (data.type === 'error') {
             toast({
               title: "Error",
@@ -210,6 +277,9 @@ export function CommunityChat({ communityId }: CommunityChatProps) {
         // Add message to local state immediately for instant display
         setMessages(prev => [...prev, data.message])
         
+        // Always scroll to bottom when user sends a message
+        setTimeout(() => scrollToBottomImmediate(), 50)
+        
         // Then broadcast via WebSocket to other users
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
           wsRef.current.send(JSON.stringify({
@@ -231,12 +301,6 @@ export function CommunityChat({ communityId }: CommunityChatProps) {
     }
   }
 
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
-    }
-  }
-
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -247,7 +311,7 @@ export function CommunityChat({ communityId }: CommunityChatProps) {
   return (
     <div className="w-full h-[90vh] flex flex-col relative">
       {/* Messages Area - Scrollable */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24" ref={messagesContainerRef} onScroll={handleScroll}>
         {messages.map((message) => (
           <div
             key={message.id}
@@ -314,6 +378,25 @@ export function CommunityChat({ communityId }: CommunityChatProps) {
           </p>
         )}
       </div>
+
+      {/* Scroll to Bottom Button */}
+      {!isAtBottom && (
+        <Button
+          onClick={scrollToBottom}
+          size="icon"
+          className="absolute bottom-[80px] right-4 z-20 h-10 w-10 rounded-full shadow-lg bg-primary hover:bg-primary/90 relative"
+          title={`${unreadCount} new message${unreadCount !== 1 ? 's' : ''} - Click to scroll to latest`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+          {unreadCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </Button>
+      )}
 
       {/* Footer */}
       <div className="absolute bottom-[70px] left-0 right-0 bg-background/90 backdrop-blur-sm border-t border-border p-3 z-10">

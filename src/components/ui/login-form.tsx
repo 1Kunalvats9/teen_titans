@@ -22,11 +22,8 @@ export function LoginForm({
   useEffect(() => {
     if (isAuthenticated && user) {
       console.log('User authenticated, redirecting to dashboard...')
-      if (user.isOnboarded) {
-        router.push('/dashboard')
-      } else {
-        router.push('/onboarding')
-      }
+      // Always redirect to dashboard - OnboardingProvider will show modal if needed
+      router.push('/dashboard')
     }
   }, [isAuthenticated, user, router])
 

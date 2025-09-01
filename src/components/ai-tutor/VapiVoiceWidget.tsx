@@ -40,6 +40,10 @@ export const VapiVoiceWidget: React.FC<VapiVoiceWidgetProps> = ({
   const [showTranscripts, setShowTranscripts] = useState(false)
   const durationRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const vapiRef = useRef<any>(null)
+  
+  // Time limit constants (1.2 minutes = 72 seconds)
+  const CALL_TIME_LIMIT = 72 // seconds
+  const WARNING_TIME = 60 // Show warning at 1 minute
 
   // Initialize Vapi
   useEffect(() => {
@@ -115,7 +119,23 @@ export const VapiVoiceWidget: React.FC<VapiVoiceWidgetProps> = ({
   useEffect(() => {
     if (callStatus === 'active') {
       durationRef.current = setInterval(() => {
-        setCallDuration(prev => prev + 1)
+        setCallDuration(prev => {
+          const newDuration = prev + 1
+          
+          // Show warning at 1 minute
+          if (newDuration === WARNING_TIME) {
+            toast.warning('⚠️ 1 minute remaining. Call will end automatically in 12 seconds due to free tier limits.')
+          }
+          
+          // Auto-end call at time limit
+          if (newDuration >= CALL_TIME_LIMIT) {
+            handleEndCall()
+            toast.info('⏰ Call time limit reached (1.2 minutes). Due to limited free tokens, call limit is set to 1.2 minutes only.')
+            return CALL_TIME_LIMIT
+          }
+          
+          return newDuration
+        })
       }, 1000)
     } else {
       if (durationRef.current) {
@@ -223,6 +243,33 @@ export const VapiVoiceWidget: React.FC<VapiVoiceWidgetProps> = ({
               <span className="text-sm text-green-600 font-medium">Connected</span>
               <span className="text-sm text-muted-foreground">•</span>
               <span className="text-sm text-muted-foreground">{formatDuration(callDuration)}</span>
+              <span className="text-sm text-muted-foreground">•</span>
+              <span className={`text-sm font-medium ${
+                callDuration >= WARNING_TIME ? 'text-orange-600' : 'text-muted-foreground'
+              }`}>
+                {formatDuration(CALL_TIME_LIMIT - callDuration)} remaining
+              </span>
+            </div>
+          )}
+          
+          {/* Time Progress Bar */}
+          {callStatus === 'active' && (
+            <div className="mt-2 w-full max-w-xs mx-auto">
+              <div className="w-full bg-muted rounded-full h-2">
+                <div 
+                  className={`h-2 rounded-full transition-all duration-1000 ${
+                    callDuration >= WARNING_TIME ? 'bg-orange-500' : 'bg-green-500'
+                  }`}
+                  style={{ width: `${(callDuration / CALL_TIME_LIMIT) * 100}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <span>0:00</span>
+                <span className={callDuration >= WARNING_TIME ? 'text-orange-600 font-medium' : ''}>
+                  {formatDuration(callDuration)}
+                </span>
+                <span>1:12</span>
+              </div>
             </div>
           )}
         </div>
@@ -374,7 +421,15 @@ export const VapiVoiceWidget: React.FC<VapiVoiceWidgetProps> = ({
           {/* Call Status */}
           <div className="text-center mt-6">
             {callStatus === 'idle' && (
-              <p className="text-muted-foreground">Ready to start your voice learning session</p>
+              <div className="space-y-2">
+                <p className="text-muted-foreground">Ready to start your voice learning session</p>
+                <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 max-w-md mx-auto">
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    <span className="font-medium">⏰ Time Limit:</span> Free tier calls are limited to 1.2 minutes (72 seconds) 
+                    due to token constraints. Upgrade for unlimited voice sessions.
+                  </p>
+                </div>
+              </div>
             )}
             {callStatus === 'connecting' && (
               <p className="text-muted-foreground">Connecting to AI tutor...</p>
@@ -387,7 +442,15 @@ export const VapiVoiceWidget: React.FC<VapiVoiceWidgetProps> = ({
               </p>
             )}
             {callStatus === 'ended' && (
-              <p className="text-muted-foreground">Call ended. You can start a new session anytime.</p>
+              <div className="space-y-2">
+                <p className="text-muted-foreground">Call ended. You can start a new session anytime.</p>
+                <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 max-w-md mx-auto">
+                  <p className="text-xs text-orange-700 dark:text-orange-300">
+                    <span className="font-medium">ℹ️ Reminder:</span> Free tier calls are limited to 1.2 minutes. 
+                    Consider upgrading for longer, uninterrupted learning sessions.
+                  </p>
+                </div>
+              </div>
             )}
           </div>
 

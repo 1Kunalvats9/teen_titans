@@ -124,9 +124,9 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-card border border-border rounded-2xl shadow-2xl">
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-transparent border border-border/20 rounded-2xl shadow-2xl backdrop-blur-sm">
         {/* Header */}
-        <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border p-6">
+        <div className="sticky top-0 bg-transparent backdrop-blur-sm border-b border-border/20 p-6">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-foreground">
@@ -148,7 +148,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-8">
+        <div className="p-6 space-y-8 bg-transparent">
           {/* Error Display */}
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
@@ -251,7 +251,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-card/95 backdrop-blur-sm border-t border-border p-6">
+        <div className="sticky bottom-0 bg-transparent backdrop-blur-sm border-t border-border/20 p-6">
           <div className="flex justify-end space-x-3">
             <Button
               variant="outline"
