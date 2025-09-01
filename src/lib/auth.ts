@@ -135,6 +135,18 @@ export const authOptions = {
       }
       return session
     },
+    async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
+      // Handle redirects properly in production
+      if (url.startsWith('/')) {
+        // Relative URLs should be resolved against the base URL
+        return `${baseUrl}${url}`
+      } else if (new URL(url).origin === baseUrl) {
+        // Same origin URLs are allowed
+        return url
+      }
+      // Default to base URL for external URLs
+      return baseUrl
+    },
   },
   pages: {
     signIn: '/login',

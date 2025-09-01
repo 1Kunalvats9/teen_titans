@@ -8,6 +8,32 @@ const nextConfig: NextConfig = {
 	turbopack: {
 		root: __dirname,
 	} as any,
+	// Environment variables
+	env: {
+		NEXT_PUBLIC_WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'wss://learnos-websocket-server.onrender.com',
+	},
+	// Headers for security
+	async headers() {
+		return [
+			{
+				source: '/(.*)',
+				headers: [
+					{
+						key: 'X-Frame-Options',
+						value: 'DENY',
+					},
+					{
+						key: 'X-Content-Type-Options',
+						value: 'nosniff',
+					},
+					{
+						key: 'Referrer-Policy',
+						value: 'origin-when-cross-origin',
+					},
+				],
+			},
+		];
+	},
 };
 
 export default nextConfig;

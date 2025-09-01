@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/auth"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
@@ -13,10 +13,22 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { login, loginGoogle, isLoading } = useAuth()
+  const { login, loginGoogle, isLoading, user, isAuthenticated } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
+
+  // Redirect to dashboard when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log('User authenticated, redirecting to dashboard...')
+      if (user.isOnboarded) {
+        router.push('/dashboard')
+      } else {
+        router.push('/onboarding')
+      }
+    }
+  }, [isAuthenticated, user, router])
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -35,7 +47,7 @@ export function LoginForm({
       if (!res.success) {
         setError(res.message || 'Invalid email or password')
       }
-      // Don't redirect here - let the auth context handle it
+      // The useEffect above will handle the redirect
     } finally {
       setLoading(false)
     }
@@ -45,6 +57,7 @@ export function LoginForm({
     setLoading(true)
     try {
       await loginGoogle()
+      // Google login will redirect automatically
     } finally {
       setLoading(false)
     }

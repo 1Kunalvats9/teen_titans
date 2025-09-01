@@ -11,17 +11,27 @@ export const AI_TUTOR_CONFIG = {
 
 // WebSocket Server Configuration
 export const WEBSOCKET_CONFIG = {
-  // Default to deployed server URL
+  // Production WebSocket server URL
   serverUrl: 'wss://learnos-websocket-server.onrender.com',
   // Local development URL
   localUrl: 'ws://localhost:3001',
-  // Get the appropriate URL - prioritize environment variable, then deployed server
+  // Get the appropriate URL based on environment
   getUrl: () => {
+    // Check if we're in production (Vercel)
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      // If it's your production domain, use production WebSocket
+      if (hostname === 'teen-titans.vercel.app' || hostname === 'learnos.vercel.app') {
+        return 'wss://learnos-websocket-server.onrender.com';
+      }
+    }
+    
     // If environment variable is set, use it
     if (process.env.NEXT_PUBLIC_WEBSOCKET_URL) {
       return process.env.NEXT_PUBLIC_WEBSOCKET_URL;
     }
-    // Otherwise, use deployed server URL
+    
+    // Default to production server URL
     return 'wss://learnos-websocket-server.onrender.com';
   }
 };

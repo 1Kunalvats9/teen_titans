@@ -8,6 +8,13 @@
     }
   },
   "env": {
-    "PRISMA_GENERATE_DATAPROXY": "true"
+    "PRISMA_GENERATE_DATAPROXY": "true",
+    "NEXTAUTH_URL": "https://teen-titans.vercel.app",
+    "NEXT_PUBLIC_WEBSOCKET_URL": "wss://learnos-websocket-server.onrender.com"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_WEBSOCKET_URL": "wss://learnos-websocket-server.onrender.com"
+    }
   }
 }
