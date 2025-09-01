@@ -38,6 +38,42 @@
 
     --radius: 0.5rem;
   }
+
+  .light {
+    /* Light Mode Colors */
+    --background: 0 0% 100%; /* #ffffff */
+    --foreground: 240 10% 3.9%; /* #0c0a09 */
+
+    --muted: 240 4.8% 95.9%; /* #f1f5f9 */
+    --muted-foreground: 240 3.8% 46.1%; /* #71717a */
+    --muted-foreground-light: 240 3.8% 46.1% / 0.5; /* rgba(113, 113, 122, 0.5) */
+    --muted-foreground-dark: 240 3.8% 46.1% / 0.6; /* rgba(113, 113, 122, 0.6) */
+
+    --card: 0 0% 100%; /* #ffffff */
+    --card-foreground: 240 10% 3.9%; /* #0c0a09 */
+
+    --popover: 0 0% 100%; /* #ffffff */
+    --popover-foreground: 240 10% 3.9%; /* #0c0a09 */
+
+    /* Primary Accent Colors - Keep teal theme */
+    --primary: 165 96% 71%; /* #78fcd6 */
+    --primary-foreground: 160 8% 6%; /* #0d0f0e */
+    --primary-dark: 160 100% 50%; /* #00ffb6 */
+    --primary-light: 160 48% 87%; /* Keep primary-light */
+
+    /* Secondary Accent Colors */
+    --secondary: 240 4.8% 95.9%; /* #f1f5f9 */
+    --secondary-foreground: 240 5.9% 10%; /* #18181b */
+
+    --accent: 240 4.8% 95.9%; /* #f1f5f9 */
+    --accent-foreground: 240 5.9% 10%; /* #18181b */
+
+    --border: 240 5.9% 90%; /* #e4e4e7 */
+    --border-light: 240 5.9% 90% / 0.1; /* rgba(228, 228, 231, 0.1) */
+    --border-dark: 240 5.9% 90% / 0.05; /* rgba(228, 228, 231, 0.05) */
+
+    --ring: 165 96% 71%; /* Keep teal ring */
+  }
 }
 
 @layer base {

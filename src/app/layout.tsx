@@ -11,6 +11,7 @@ import { Toaster } from "sonner";
 import { UniversalLoader } from "@/components/ui/universal-loader";
 import { FloatingChatbotButton } from "@/components/chatbot/FloatingChatbotButton";
 import { ConditionalPadding } from "@/components/ui/conditional-padding";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,8 +25,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                const theme = localStorage.getItem('app-theme') || 'light';
+                const theme = localStorage.getItem('app-theme') || 'dark';
                 document.documentElement.classList.toggle('dark', theme === 'dark');
+                document.documentElement.classList.toggle('light', theme === 'light');
               } catch (e) {}
             `,
           }}

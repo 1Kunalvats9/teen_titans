@@ -1,5 +1,3 @@
-import Image from "next/image"
-
 const testimonials = [
   {
     quote:
@@ -101,8 +99,8 @@ const TestimonialCard = ({ quote, name, company, avatar, type }: TestimonialCard
     cardHeight = "h-[502px]"
     backgroundElements = (
       <div
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-20"
-        style={{ backgroundImage: "url('/images/large-card-background.svg')", zIndex: 0 }}
+        className="absolute inset-0 w-full h-full bg-gradient-to-br from-muted/20 to-transparent rounded-[10px]"
+        style={{ zIndex: 0 }}
       />
     )
   } else {
@@ -113,19 +111,22 @@ const TestimonialCard = ({ quote, name, company, avatar, type }: TestimonialCard
     cardHeight = "h-[244px]"
   }
 
+  // Generate initials from name
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase()
+  }
+
   return (
     <div className={`${cardClasses} ${cardWidth} ${cardHeight}`}>
       {backgroundElements}
       <div className={`relative z-10 font-normal break-words ${quoteClasses}`}>{quote}</div>
       <div className="relative z-10 flex justify-start items-center gap-3">
-        <Image
-          src={avatar || "/placeholder.svg"}
-          alt={`${name} avatar`}
-          width={avatarSize}
-          height={avatarSize}
-          className={`w-${avatarSize / 4} h-${avatarSize / 4} ${avatarBorderRadius}`}
+        <div 
+          className={`w-${avatarSize / 4} h-${avatarSize / 4} ${avatarBorderRadius} bg-primary/20 flex items-center justify-center border border-primary/30`}
           style={{ border: "1px solid rgba(255, 255, 255, 0.08)" }}
-        />
+        >
+          <span className="text-primary text-xs font-semibold">{getInitials(name)}</span>
+        </div>
         <div className="flex flex-col justify-start items-start gap-0.5">
           <div className={nameClasses}>{name}</div>
           <div className={companyClasses}>{company}</div>

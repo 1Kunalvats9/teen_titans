@@ -12,16 +12,37 @@ interface ThemeState {
 
 export const useThemeStore = create<ThemeState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       theme: 'dark',
-      toggleTheme: () => 
-        set((state) => ({ 
-          theme: state.theme === 'light' ? 'dark' : 'light' 
-        })),
-      setTheme: (theme) => set({ theme }),
+      toggleTheme: () => {
+        const newTheme = get().theme === 'light' ? 'dark' : 'light';
+        set({ theme: newTheme });
+        
+        // Update DOM classes
+        if (typeof window !== 'undefined') {
+          document.documentElement.classList.toggle('dark', newTheme === 'dark');
+          document.documentElement.classList.toggle('light', newTheme === 'light');
+        }
+      },
+      setTheme: (theme) => {
+        set({ theme });
+        
+        // Update DOM classes
+        if (typeof window !== 'undefined') {
+          document.documentElement.classList.toggle('dark', theme === 'dark');
+          document.documentElement.classList.toggle('light', theme === 'light');
+        }
+      },
     }),
     {
-      name: 'app-theme', 
+      name: 'app-theme',
+      onRehydrateStorage: () => (state) => {
+        // Sync DOM classes when rehydrating from storage
+        if (state && typeof window !== 'undefined') {
+          document.documentElement.classList.toggle('dark', state.theme === 'dark');
+          document.documentElement.classList.toggle('light', state.theme === 'light');
+        }
+      },
     }
   )
 );

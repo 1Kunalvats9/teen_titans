@@ -10,7 +10,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="light"
+      defaultTheme="dark"
       enableSystem={false}
       disableTransitionOnChange
       storageKey="app-theme"
@@ -38,6 +38,14 @@ function ThemeSync({ children }: { children: React.ReactNode }) {
       setTheme(theme)
     }
   }, [theme, nextTheme, setTheme])
+
+  // Ensure DOM classes are properly set
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && theme) {
+      document.documentElement.classList.toggle('dark', theme === 'dark')
+      document.documentElement.classList.toggle('light', theme === 'light')
+    }
+  }, [theme])
 
   return <>{children}</>
 }

@@ -1,6 +1,5 @@
 import { HeroSection } from "@/components/hero-section"
 import { DashboardPreview } from "@/components/dashboard-preview"
-import { SocialProof } from "@/components/social-proof"
 import { BentoSection } from "@/components/bento-section"
 import { LargeTestimonial } from "@/components/large-testimonial"
 import { PricingSection } from "@/components/pricing-section"
@@ -24,7 +23,7 @@ export default function LandingPage() {
         </main>
         <div className="max-w-[1320px] mx-auto px-6">
           <AnimatedSection className="relative z-10 mt-[411px] md:mt-[400px]" delay={0.1}>
-            <SocialProof />
+            <h1></h1>
           </AnimatedSection>
           <AnimatedSection id="features-section" className="relative z-10 mt-16" delay={0.2}>
             <BentoSection />
