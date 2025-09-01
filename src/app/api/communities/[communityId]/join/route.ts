@@ -18,7 +18,7 @@ export async function POST(
     // Check if community exists and is active
     const community = await prisma.community.findUnique({
       where: { id: communityId },
-      select: { id: true, isActive: true }
+      select: { id: true, isActive: true, isPrivate: true }
     })
 
     if (!community) {
@@ -27,6 +27,10 @@ export async function POST(
 
     if (!community.isActive) {
       return NextResponse.json({ error: 'Community is not active' }, { status: 400 })
+    }
+
+    if (community.isPrivate) {
+      return NextResponse.json({ error: 'Cannot join private communities directly. You need an invitation.' }, { status: 403 })
     }
 
     // Check if user is already a member

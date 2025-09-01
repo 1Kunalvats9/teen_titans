@@ -12,7 +12,8 @@ import {
   Plus,
   Sparkles,
   Search,
-  ArrowRight
+  ArrowRight,
+  Mic
 } from 'lucide-react'
 import { PremiumCard } from '@/components/ui/premium-card'
 import { Button } from '@/components/ui/button'
@@ -25,6 +26,13 @@ const quickActions = [
     description: 'Continue your modules',
     icon: BookOpen,
     action: 'learn',
+    category: 'primary'
+  },
+  {
+    title: 'AI Tutor Voice',
+    description: 'Learn through voice conversations',
+    icon: Mic,
+    action: 'ai-tutor',
     category: 'primary'
   },
   {
@@ -61,13 +69,6 @@ const quickActions = [
     icon: Plus,
     action: 'new',
     category: 'secondary'
-  },
-  {
-    title: 'AI Tutor Demo',
-    description: 'Voice learning experience',
-    icon: Sparkles,
-    action: 'tutor-demo',
-    category: 'secondary'
   }
 ]
 
@@ -80,6 +81,10 @@ export function QuickActions() {
       case 'learn':
         // Navigate to learning modules
         router.push('/modules')
+        break
+      case 'ai-tutor':
+        // Navigate to AI Tutor voice interface
+        router.push('/ai-tutor')
         break
       case 'chatbot':
         // Open AI chatbot

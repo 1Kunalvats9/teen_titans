@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/auth'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { CommunityList } from '@/components/community/CommunityList'
+import { CommunityInviteNotification } from '@/components/community/CommunityInviteNotification'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 export default function CommunityPage() {
@@ -44,6 +45,11 @@ export default function CommunityPage() {
             <p className="text-muted-foreground">
               Join communities to connect with other learners and share your thoughts
             </p>
+          </div>
+          
+          {/* Community Invite Notifications */}
+          <div className="mb-8">
+            <CommunityInviteNotification />
           </div>
           
           <CommunityList />

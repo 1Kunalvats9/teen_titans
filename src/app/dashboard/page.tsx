@@ -10,6 +10,8 @@ import { RecentActivity } from '@/components/dashboard/RecentActivity'
 import { LearningProgress } from '@/components/dashboard/LearningProgress'
 import { TodaysGoals } from '@/components/dashboard/TodaysGoals'
 import { AiConversations } from '@/components/dashboard/AiConversations'
+import { AiTutorSession } from '@/components/dashboard/AiTutorSession'
+import { CommunityInviteNotification } from '@/components/community/CommunityInviteNotification'
 import { useAllDashboardData } from '@/hooks/queries/use-dashboard'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { FloatingChatbotButton } from '@/components/chatbot/FloatingChatbotButton'
@@ -65,6 +67,9 @@ const DashboardContent = memo(function DashboardContent() {
         {/* Header */}
         <DashboardHeader user={user} />
         
+        {/* Community Invite Notifications */}
+        <CommunityInviteNotification />
+        
         {/* Welcome Section */}
         <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -84,10 +89,10 @@ const DashboardContent = memo(function DashboardContent() {
                 Start Learning
               </button>
               <button 
-                onClick={() => router.push('/chatbot')}
+                onClick={() => router.push('/ai-tutor-session')}
                 className="px-6 py-3 border border-border text-foreground rounded-lg font-medium hover:bg-muted transition-colors cursor-pointer"
               >
-                Ask AI Tutor
+                Talk to AI Tutor
               </button>
             </div>
           </div>

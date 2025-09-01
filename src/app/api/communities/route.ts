@@ -13,6 +13,17 @@ export async function GET(request: NextRequest) {
     const communities = await prisma.community.findMany({
       where: {
         isActive: true,
+        OR: [
+          { isPrivate: false }, // Public communities
+          { 
+            isPrivate: true,
+            members: {
+              some: {
+                userId: session.user.id
+              }
+            }
+          } // Private communities where user is a member
+        ]
       },
       include: {
         _count: {
@@ -53,7 +64,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { name, description } = await request.json()
+    const { name, description, isPrivate } = await request.json()
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json({ error: 'Community name is required' }, { status: 400 })
@@ -72,6 +83,7 @@ export async function POST(request: NextRequest) {
       data: {
         name: name.trim(),
         description: description?.trim() || null,
+        isPrivate: isPrivate || false,
       },
     })
 

@@ -3,14 +3,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BrainCircuit, Menu, User, LogOut, LayoutDashboard, Bot, Users } from 'lucide-react';
+import { BrainCircuit, Menu, User, LogOut, LayoutDashboard, Bot, Users, Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/auth';
+import { useInviteCount } from '@/hooks/queries/use-invites';
 import ThemeToggleButton from '@/components/ui/theme-toggle-button';
 import Link from 'next/link';
 
 export const Navbar = () => {
   const navLinks = ['Features', 'Pricing', 'Community'];
   const { user, logout, isLoading } = useAuth();
+  const { data: inviteCount = 0 } = useInviteCount();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -70,11 +72,16 @@ export const Navbar = () => {
               <Link href="/community">
                 <motion.button 
                   whileHover={{ scale: 1.05 }} 
-                  className="flex items-center gap-2 px-3 py-2 bg-background border border-border text-foreground rounded-lg hover:bg-muted transition-colors cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-2 bg-background border border-border text-foreground rounded-lg hover:bg-muted transition-colors cursor-pointer relative"
                   title="Communities"
                 >
                   <Users className="w-4 h-4" />
                   <span className="text-sm font-medium">Communities</span>
+                  {inviteCount > 0 && (
+                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                      {inviteCount > 9 ? '9+' : inviteCount}
+                    </div>
+                  )}
                 </motion.button>
               </Link>
               <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">

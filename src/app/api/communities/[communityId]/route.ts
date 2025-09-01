@@ -15,6 +15,22 @@ export async function GET(
 
     const { communityId } = await params
 
+    // Check if user is a member of the community
+    const membership = await prisma.communityMember.findUnique({
+      where: {
+        userId_communityId: {
+          userId: session.user.id,
+          communityId: communityId,
+        },
+      },
+      select: { role: true }
+    })
+
+    if (!membership) {
+      return NextResponse.json({ error: 'Not a member of this community' }, { status: 403 })
+    }
+
+    // Get community with member details
     const community = await prisma.community.findUnique({
       where: { id: communityId },
       include: {
@@ -25,9 +41,6 @@ export async function GET(
           },
         },
         members: {
-          where: {
-            userId: session.user.id,
-          },
           select: {
             userId: true,
             role: true,
@@ -38,13 +51,6 @@ export async function GET(
 
     if (!community) {
       return NextResponse.json({ error: 'Community not found' }, { status: 404 })
-    }
-
-    // Check if user is a member
-    const isMember = community.members.length > 0
-
-    if (!isMember) {
-      return NextResponse.json({ error: 'Not a member' }, { status: 403 })
     }
 
     return NextResponse.json({ community })

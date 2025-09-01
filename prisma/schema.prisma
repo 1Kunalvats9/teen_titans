@@ -72,6 +72,8 @@ model User {
   todaysGoals         TodaysGoal[]
   communityMembers    CommunityMember[]
   communityMessages   CommunityMessage[]
+  sentInvites        CommunityInvite[] @relation("Inviter")
+  receivedInvites    CommunityInvite[] @relation("Invitee")
 
   // NextAuth Required Relations
   accounts Account[]
@@ -329,12 +331,14 @@ model Community {
   name        String
   description String?
   isActive    Boolean  @default(true)
+  isPrivate   Boolean  @default(false) // New field for public/private communities
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
   members  CommunityMember[]
   messages CommunityMessage[]
+  invites  CommunityInvite[] // New relation for invites
 }
 
 model CommunityMember {
@@ -348,6 +352,26 @@ model CommunityMember {
   community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
 
   @@id([userId, communityId])
+}
+
+// New model for community invites
+model CommunityInvite {
+  id          String   @id @default(cuid())
+  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime // Invites expire after 7 days
+  
+  // Relations
+  inviterId   String
+  inviteeId   String
+  communityId String
+  inviter     User      @relation("Inviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee     User      @relation("Invitee", fields: [inviteeId], references: [id], onDelete: Cascade)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([inviteeId, status])
+  @@index([communityId, status])
+  @@index([expiresAt]) // For cleanup queries
 }
 
 model CommunityMessage {
